@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://ckvfhe4r5wj2c"]
+
+[ext_resource type="Script" uid="uid://dsui34qroigre" path="res://ProjectHelix/Xedats/Tests/GLTF/xedats_gltf_fixture_runner.gd" id="1_script"]
+
+[node name="XedatsGLTFFixtureRunner" type="Node" unique_id=1095231578]
+script = ExtResource("1_script")

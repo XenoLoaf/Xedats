@@ -1,0 +1,48 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Xedats GLTF Fixture"
+  },
+  "extensionsUsed": [
+    "KHR_audio_emitter"
+  ],
+  "extensions": {
+    "KHR_audio_emitter": {
+      "sources": [
+        {
+          "uri": "../../../../Sound/Test_/Other/open_gate_sfx.wav"
+        }
+      ],
+      "emitters": [
+        {
+          "name": "fixture_precomputed_probe_region_emitter",
+          "source": 0,
+          "gain": 0.6,
+          "loop": false,
+          "extras": {
+            "xedats_category": "SFX",
+            "xedats_probe_region": {
+              "id": "region_a"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "name": "FixturePrecomputedProbeRegionEmitter",
+      "extensions": {
+        "KHR_audio_emitter": {
+          "emitter": 0
+        }
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [0]
+    }
+  ],
+  "scene": 0
+}

@@ -1,0 +1,48 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Xedats GLTF Fixture"
+  },
+  "extensionsUsed": [
+    "OMI_audio_material"
+  ],
+  "nodes": [
+    {
+      "name": "FixtureOMIExtremesLowNode",
+      "extensions": {
+        "OMI_audio_material": {
+          "absorption": 0.0,
+          "transmission": 0.0,
+          "reflection": 0.0,
+          "extras": {
+            "xedats_bus": "FixtureOMIExtremesLowBus",
+            "xedats_category": "Ambient"
+          }
+        }
+      }
+    },
+    {
+      "name": "FixtureOMIExtremesHighNode",
+      "extensions": {
+        "OMI_audio_material": {
+          "absorption": 1.0,
+          "transmission": 1.0,
+          "reflection": 1.0,
+          "extras": {
+            "xedats_bus": "FixtureOMIExtremesHighBus",
+            "xedats_category": "Ambient"
+          }
+        }
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        0,
+        1
+      ]
+    }
+  ],
+  "scene": 0
+}

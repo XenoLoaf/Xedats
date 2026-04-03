@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="XedatsOMIEffectMappingProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ProjectHelix/Xedats/Modules/GLTF/xedats_omi_effect_mapping_profile.gd" id="1_omi_map"]
+
+[resource]
+script = ExtResource("1_omi_map")
+chain_name = "OMI_AudioMaterial"
+low_pass_max_hz = 20000.0
+low_pass_min_hz = 1200.0
+high_pass_min_hz = 40.0
+high_pass_max_hz = 900.0
+reverb_room_size_base = 0.2
+reverb_room_size_scale = 0.7

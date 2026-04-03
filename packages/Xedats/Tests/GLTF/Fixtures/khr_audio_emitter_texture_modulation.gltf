@@ -1,0 +1,53 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Xedats GLTF Fixture"
+  },
+  "extensionsUsed": [
+    "KHR_audio_emitter"
+  ],
+  "extensions": {
+    "KHR_audio_emitter": {
+      "sources": [
+        {
+          "uri": "../../../../Sound/Test_/Other/door_unlock_sfx.wav"
+        },
+        {
+          "uri": "../../../../Sound/Test_/Other/open_gate_sfx.wav"
+        }
+      ],
+      "emitters": [
+        {
+          "name": "fixture_texture_modulation_emitter",
+          "sources": [0, 1],
+          "gain": 1.0,
+          "loop": false,
+          "extras": {
+            "xedats_category": "SFX",
+            "xedats_texture_profile": "rain_dense",
+            "xedats_texture_density": 0.5,
+            "xedats_texture_variance": 0.4
+          }
+        }
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "name": "FixtureTextureModulationEmitter",
+      "extensions": {
+        "KHR_audio_emitter": {
+          "emitter": 0
+        }
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "scene": 0
+}

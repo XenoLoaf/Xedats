@@ -1,0 +1,47 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Xedats GLTF Fixture"
+  },
+  "extensionsUsed": [
+    "KHR_audio_emitter"
+  ],
+  "extensions": {
+    "KHR_audio_emitter": {
+      "sources": [
+        {
+          "uri": "../../../../Sound/Test_/Other/close_gate_sfx.wav"
+        }
+      ],
+      "emitters": [
+        {
+          "name": "fixture_name_fallback_event",
+          "source": 0,
+          "gain": 0.8,
+          "loop": false,
+          "extras": {
+            "xedats_category": "SFX"
+          }
+        }
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "name": "FixtureNameFallbackEmitter",
+      "extensions": {
+        "KHR_audio_emitter": {
+          "emitter": 0
+        }
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "scene": 0
+}

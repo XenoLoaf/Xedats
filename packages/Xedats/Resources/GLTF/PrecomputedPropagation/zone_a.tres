@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="XedatsPrecomputedPropagationProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ProjectHelix/Xedats/Modules/GLTF/xedats_precomputed_propagation_profile.gd" id="1_zonea"]
+
+[resource]
+script = ExtResource("1_zonea")
+propagation_id = "zone_a"
+probe_region_id = "region_a"
+gain_multiplier = 0.8
+override_enable_occlusion = true
+enable_occlusion = false
+override_enable_distance_filtering = true
+enable_distance_filtering = false
+occlusion_intensity = 0.2
+target_bus_name = "FixturePrecomputedZoneA"
+lowpass_cutoff_hz = 3200.0
+highpass_cutoff_hz = 180.0
+reverb_wet = 0.35
+reverb_room_size = 0.55

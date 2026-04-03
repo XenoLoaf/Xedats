@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="XedatsPrecomputedPropagationProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ProjectHelix/Xedats/Modules/GLTF/xedats_precomputed_propagation_profile.gd" id="1_regiona"]
+
+[resource]
+script = ExtResource("1_regiona")
+propagation_id = "region_a_fallback"
+probe_region_id = "region_a"
+gain_multiplier = 0.65
+override_enable_occlusion = true
+enable_occlusion = true
+override_enable_distance_filtering = true
+enable_distance_filtering = true
+occlusion_intensity = 0.6
+lowpass_cutoff_hz = 5400.0

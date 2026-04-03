@@ -1,0 +1,46 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Xedats GLTF Fixture"
+  },
+  "extensionsUsed": [
+    "KHR_audio_emitter"
+  ],
+  "extensions": {
+    "KHR_audio_emitter": {
+      "sources": [
+        {
+          "uri": "../../../../Sound/Test_/Other/door_unlock_sfx.wav"
+        }
+      ],
+      "emitters": [
+        {
+          "name": "fixture_precomputed_missing_emitter",
+          "source": 0,
+          "gain": 0.75,
+          "loop": false,
+          "extras": {
+            "xedats_category": "SFX",
+            "xedats_precomputed_id": "missing_zone"
+          }
+        }
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "name": "FixturePrecomputedMissingEmitter",
+      "extensions": {
+        "KHR_audio_emitter": {
+          "emitter": 0
+        }
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [0]
+    }
+  ],
+  "scene": 0
+}

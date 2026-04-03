@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="XedatsReflectionBudgetProfile" load_steps=2 format=3 uid="uid://c4ebg8hqn8j2f"]
+
+[ext_resource type="Script" path="res://ProjectHelix/Xedats/Modules/GLTF/xedats_reflection_budget_profile.gd" id="1_2u58h"]
+
+[resource]
+script = ExtResource("1_2u58h")
+low_budget = 2
+medium_budget = 4
+high_budget = 8
+default_budget_tier = "medium"

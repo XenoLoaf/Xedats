@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="XedatsDistanceBandProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ProjectHelix/Xedats/Modules/GLTF/xedats_distance_band_profile.gd" id="1_distband"]
+
+[resource]
+script = ExtResource("1_distband")
+near_max_distance = 8.0
+mid_max_distance = 24.0
+near_gain_scale = 1.0
+mid_gain_scale = 0.8
+far_gain_scale = 0.5
+near_rate_scale = 1.0
+mid_rate_scale = 0.7
+far_rate_scale = 0.35

@@ -1,0 +1,56 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Xedats GLTF Fixture"
+  },
+  "extensionsUsed": [
+    "KHR_audio_emitter"
+  ],
+  "extensions": {
+    "KHR_audio_emitter": {
+      "sources": [
+        {
+          "uri": "../../../../Sound/Test_/Other/open_gate_sfx.wav"
+        }
+      ],
+      "emitters": [
+        {
+          "name": "fixture_xedats_extras_invalid_emitter",
+          "source": 0,
+          "gain": 0.7,
+          "loop": false,
+          "extras": {
+            "xedats_event": "fixture_gate_event",
+            "xedats_category": "SFX",
+            "xedats_reflection_budget": "ultra",
+            "xedats_texture_profile": "",
+            "xedats_texture_density": 1.8,
+            "xedats_texture_variance": -0.25,
+            "xedats_dynamic_portal_openness": 1.6,
+            "xedats_dynamic_portal_closed_gain_scale": -0.4,
+            "xedats_precomputed_id": "",
+            "xedats_probe_region": 42
+          }
+        }
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "name": "FixtureXedatsExtrasInvalidEmitter",
+      "extensions": {
+        "KHR_audio_emitter": {
+          "emitter": 0
+        }
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "scene": 0
+}

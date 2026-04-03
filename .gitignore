@@ -1,0 +1,10 @@
+# Godot editor data
+.godot/
+.import/
+
+# Mono/C# build output
+.mono/
+
+# OS files
+Thumbs.db
+.DS_Store
