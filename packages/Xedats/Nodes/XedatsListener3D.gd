@@ -68,14 +68,14 @@ var _pool_id: int = -1
 ## Registers this listener with XedatsSingleton when entering scene tree.
 func _ready() -> void:
 	# Register with XedatsSingleton if available
-	var xedats = XedatsSingleton.instance()
+	var xedats: XedatsSingleton = XedatsSingleton.instance()
 	if xedats:
 		xedats._register_listener(self )
 
 ## Unregisters this listener from XedatsSingleton when leaving scene tree.
 func _exit_tree() -> void:
 	# Unregister from XedatsSingleton
-	var xedats = XedatsSingleton.instance()
+	var xedats: XedatsSingleton = XedatsSingleton.instance()
 	if xedats:
 		xedats._unregister_listener(self )
 

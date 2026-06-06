@@ -5,7 +5,8 @@ Standalone Xedats runtime package.
 ## What this package contains
 
 - core Xedats runtime scripts
-- resources, modules, and tests copied from the bundled source
+- resources and modules
+- optional tests under `Tests/` — safe to omit; removing this folder does not affect runtime behavior
 - Xedats documentation in `Xedats.md`
 
 ## Current runtime model
@@ -22,7 +23,7 @@ The singleton lazily creates itself and attaches to the active scene tree root o
 
 ## Scope
 
-This package contains the runtime audio system itself.
+This package is the canonical standalone Xedats runtime. It does not depend on `AutoloadManager` or any console package.
 
 Package-specific setup and usage details are documented in `Xedats.md` and `Getting_Started.md`.
 

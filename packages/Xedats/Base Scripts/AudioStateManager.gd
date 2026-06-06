@@ -81,15 +81,15 @@ static func instance() -> AudioStateManager:
 
 ## @const CONFIG_DIR
 ## Directory path where audio state files are stored.
-const CONFIG_DIR = "user://AudioConfig/"
+const CONFIG_DIR: String = "user://AudioConfig/"
 
 ## @const CONFIG_FILE
 ## File path used for serialized audio state data.
-const CONFIG_FILE = "user://AudioConfig/audio_state.json"
+const CONFIG_FILE: String = "user://AudioConfig/audio_state.json"
 
 ## @var _audio_state
 ## In-memory audio state data persisted to CONFIG_FILE.
-var _audio_state = {
+var _audio_state: Dictionary = {
 	"version": 1,
 	"master_volume": 1.0,
 	"category_volumes": {
@@ -128,21 +128,21 @@ func _ready() -> void:
 ## @return bool True when save succeeds.
 func save_audio_state() -> bool:
 	# Update current state from XedatsSingleton
-	var xedats = XedatsSingleton.instance()
+	var xedats: XedatsSingleton = XedatsSingleton.instance()
 	if xedats:
 		_audio_state["master_volume"] = xedats.get_category_volume("Master")
 		
-		var all_volumes = xedats.get_all_category_volumes()
+		var all_volumes: Dictionary = xedats.get_all_category_volumes()
 		for category in all_volumes.keys():
 			_audio_state["category_volumes"][category] = all_volumes[category]
 	
 	_audio_state["timestamp"] = Time.get_ticks_msec()
 	
 	# Convert to JSON
-	var json_string = JSON.stringify(_audio_state)
+	var json_string: String = JSON.stringify(_audio_state)
 	
 	# Write to file
-	var file = FileAccess.open(CONFIG_FILE, FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(CONFIG_FILE, FileAccess.WRITE)
 	if file == null:
 		push_error("Xedats: Failed to open audio state file for writing: %s" % CONFIG_FILE)
 		return false
@@ -151,7 +151,9 @@ func save_audio_state() -> bool:
 	file.close()
 	
 	state_saved.emit()
-	print("Xedats: Audio state saved to %s" % CONFIG_FILE)
+	var _xedats_ref: XedatsSingleton = XedatsSingleton.peek_instance()
+	if _xedats_ref and _xedats_ref.enable_debug_logging:
+		print("Xedats: Audio state saved to %s" % CONFIG_FILE)
 	
 	return true
 
@@ -159,20 +161,22 @@ func save_audio_state() -> bool:
 ## @return bool True when load and validation succeed.
 func load_audio_state() -> bool:
 	if not FileAccess.file_exists(CONFIG_FILE):
-		print("Xedats: No audio state file found, using defaults")
+		var _xedats_ref: XedatsSingleton = XedatsSingleton.peek_instance()
+		if _xedats_ref and _xedats_ref.enable_debug_logging:
+			print("Xedats: No audio state file found, using defaults")
 		return false
 	
-	var file = FileAccess.open(CONFIG_FILE, FileAccess.READ)
+	var file: FileAccess = FileAccess.open(CONFIG_FILE, FileAccess.READ)
 	if file == null:
 		push_error("Xedats: Failed to open audio state file for reading: %s" % CONFIG_FILE)
 		return false
 	
-	var json_string = file.get_as_text()
+	var json_string: String = file.get_as_text()
 	file.close()
 	
 	# Parse JSON
-	var json = JSON.new()
-	var error = json.parse(json_string)
+	var json: JSON = JSON.new()
+	var error: int = json.parse(json_string)
 	
 	if error != OK:
 		push_error("Xedats: Failed to parse audio state JSON: %s" % json.get_error_message())
@@ -190,7 +194,7 @@ func load_audio_state() -> bool:
 
 	if _audio_state.has("muted_categories") and _audio_state["muted_categories"] is Array:
 		var muted_categories: Array = _audio_state["muted_categories"]
-		var voice_index := muted_categories.find("Voice")
+		var voice_index: int = muted_categories.find("Voice")
 		if voice_index >= 0 and not muted_categories.has("VoiceLines"):
 			muted_categories[voice_index] = "VoiceLines"
 			_audio_state["muted_categories"] = muted_categories
@@ -204,11 +208,13 @@ func load_audio_state() -> bool:
 	# Apply loaded state to XedatsSingleton
 	if XedatsSingleton.instance():
 		for category in _audio_state["category_volumes"].keys():
-			var volume = _audio_state["category_volumes"][category]
+			var volume: float = _audio_state["category_volumes"][category]
 			XedatsSingleton.instance().set_category_volume(category, volume)
 	
 	state_loaded.emit()
-	print("Xedats: Audio state loaded from %s" % CONFIG_FILE)
+	var _xedats_ref: XedatsSingleton = XedatsSingleton.peek_instance()
+	if _xedats_ref and _xedats_ref.enable_debug_logging:
+		print("Xedats: Audio state loaded from %s" % CONFIG_FILE)
 	
 	return true
 
@@ -304,14 +310,14 @@ func export_state_as_json() -> String:
 ## @param json_string Serialized state JSON.
 ## @return bool True when parse/validation/apply succeed.
 func import_state_from_json(json_string: String) -> bool:
-	var json = JSON.new()
-	var error = json.parse(json_string)
+	var json: JSON = JSON.new()
+	var error: int = json.parse(json_string)
 	
 	if error != OK:
 		push_error("Xedats: Failed to parse imported JSON: %s" % json.get_error_message())
 		return false
 	
-	var imported_state = json.data
+	var imported_state: Dictionary = json.data
 	if not _validate_state_structure(imported_state):
 		push_error("Xedats: Imported state has invalid structure")
 		return false
@@ -321,7 +327,7 @@ func import_state_from_json(json_string: String) -> bool:
 	# Apply to XedatsSingleton
 	if XedatsSingleton.instance():
 		for category in _audio_state["category_volumes"].keys():
-			var volume = _audio_state["category_volumes"][category]
+			var volume: float = _audio_state["category_volumes"][category]
 			XedatsSingleton.instance().set_category_volume(category, volume)
 	
 	return true
@@ -341,9 +347,11 @@ func _validate_state_structure(state: Dictionary) -> bool:
 ## @return bool True on success or if file does not exist.
 func delete_saved_state() -> bool:
 	if FileAccess.file_exists(CONFIG_FILE):
-		var error = DirAccess.remove_absolute(CONFIG_FILE)
+		var error: Error = DirAccess.remove_absolute(CONFIG_FILE)
 		if error == OK:
-			print("Xedats: Audio state file deleted")
+			var _xedats_ref: XedatsSingleton = XedatsSingleton.peek_instance()
+			if _xedats_ref and _xedats_ref.enable_debug_logging:
+				print("Xedats: Audio state file deleted")
 			return true
 		else:
 			push_error("Xedats: Failed to delete audio state file")

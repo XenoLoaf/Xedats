@@ -177,8 +177,8 @@ func move_effect(from_index: int, to_index: int) -> bool:
 		push_error("Xedats: Invalid to_index %d for chain '%s'" % [to_index, chain_name])
 		return false
 	
-	var effect = effect_nodes[from_index]
-	var metadata = _effect_metadata[from_index]
+	var effect: AudioEffect = effect_nodes[from_index]
+	var metadata: Dictionary = _effect_metadata[from_index]
 	
 	effect_nodes.remove_at(from_index)
 	_effect_metadata.remove_at(from_index)
@@ -266,7 +266,7 @@ func apply_to_bus(bus_name: String, xedats: Node) -> bool:
 		return false
 	
 	for i in range(effect_nodes.size()):
-		var effect = effect_nodes[i]
+		var effect: AudioEffect = effect_nodes[i]
 		if effect and is_active():
 			xedats.add_bus_effect(bus_name, effect)
 	

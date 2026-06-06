@@ -174,7 +174,7 @@ func _on_audio_finished() -> void:
 	
 	# Auto-return to pool if enabled
 	if auto_return_to_pool and _is_from_pool:
-		var xedats = XedatsSingleton.instance()
+		var xedats: XedatsSingleton = XedatsSingleton.instance()
 		if xedats:
 			xedats.return_player_to_pool(self )
 
@@ -200,7 +200,7 @@ func play_random_from_container(container: AudioArrayContainer, override_stream:
 		push_error("Invalid or empty audio container")
 		return
 	
-	var random_index = randi() % container.StreamContainer.size()
+	var random_index: int = randi() % container.StreamContainer.size()
 	play_from_container(container, random_index, override_stream)
 
 ## Sets volume using normalized linear value in range [0.0, 1.0].
@@ -258,7 +258,7 @@ func route_to_audio_category(category: String, use_effect_bus: bool = false, req
 ## Fades current playback to silence and stops when tween completes.
 ## @param duration Fade duration in seconds.
 func fade_out(duration: float = 1.0) -> void:
-	var tween = create_tween()
+	var tween: Tween = create_tween()
 	tween.tween_method(set_volume_linear_normalized, get_volume_linear_normalized(), 0.0, duration)
 	tween.tween_callback(stop)
 
@@ -266,10 +266,9 @@ func fade_out(duration: float = 1.0) -> void:
 ## @param duration Fade duration in seconds.
 ## @param target_volume Target normalized linear volume in range [0.0, 1.0].
 func fade_in(duration: float = 1.0, target_volume: float = 1.0) -> void:
-	var _start_volume = get_volume_linear_normalized()
 	volume_db = linear_to_db(0.0) # Start silent
 	play()
-	var tween = create_tween()
+	var tween: Tween = create_tween()
 	tween.tween_method(set_volume_linear_normalized, 0.0, target_volume, duration)
 
 ## Internal pool metadata setter used by XedatsSingleton.
@@ -302,24 +301,24 @@ func _setup_spatial_audio() -> void:
 ## @param delta Time elapsed since previous frame in seconds.
 func _update_doppler(delta: float) -> void:
 	# Calculate velocity from position change
-	var current_position = global_position
+	var current_position: Vector3 = global_position
 	_velocity = (current_position - _previous_position) / delta
 	_previous_position = current_position
 	
 	# Apply doppler shift to pitch
-	var speed = _velocity.length() * doppler_speed_multiplier
+	var speed: float = _velocity.length() * doppler_speed_multiplier
 	if speed > 0.01: # Only apply if moving
 		# Estimate observer position (camera or player listener)
-		var xedats = XedatsSingleton.instance()
-		var listener = xedats.get_current_listener() if xedats else null
+		var xedats: XedatsSingleton = XedatsSingleton.instance()
+		var listener: XedatsListener3D = xedats.get_current_listener() if xedats else null
 		if listener:
-			var to_listener = (listener.global_position - current_position).normalized()
-			var velocity_towards_listener = _velocity.dot(to_listener)
+			var to_listener: Vector3 = (listener.global_position - current_position).normalized()
+			var velocity_towards_listener: float = _velocity.dot(to_listener)
 			
 			# Simple doppler formula: pitch_multiplier = 1 + (velocity / sound_speed)
 			# Using 343 m/s as speed of sound, scaled for game speed
-			var sound_speed = 343.0 / 10.0 # Scaled for typical game units
-			var doppler_multiplier = 1.0 + (velocity_towards_listener / sound_speed)
+			var sound_speed: float = 343.0 / 10.0 # Scaled for typical game units
+			var doppler_multiplier: float = 1.0 + (velocity_towards_listener / sound_speed)
 			doppler_multiplier = clamp(doppler_multiplier, 0.5, 2.0)
 			
 			pitch_scale = doppler_multiplier
@@ -327,23 +326,23 @@ func _update_doppler(delta: float) -> void:
 ## Performs line-of-sight occlusion test against physics world.
 func _check_occlusion() -> void:
 	# Raycast from player to audio source to check for walls/obstacles
-	var xedats = XedatsSingleton.instance()
-	var listener = xedats.get_current_listener() if xedats else null
+	var xedats: XedatsSingleton = XedatsSingleton.instance()
+	var listener: XedatsListener3D = xedats.get_current_listener() if xedats else null
 	if not listener:
 		_is_occluded = false
 		return
 	
-	var space_state = get_world_3d().direct_space_state
-	var query = PhysicsRayQueryParameters3D.create(
+	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
 		listener.global_position,
 		global_position
 	)
 	query.exclude = [ self ]
 	
-	var result = space_state.intersect_ray(query)
+	var result: Dictionary = space_state.intersect_ray(query)
 	
-	var was_occluded = _is_occluded
-	_is_occluded = result != null # If ray hit something, we're occluded
+	var was_occluded: bool = _is_occluded
+	_is_occluded = not result.is_empty() # If ray hit something, we're occluded
 	
 	# Emit signal only if occlusion state changed
 	if was_occluded != _is_occluded:
@@ -380,7 +379,7 @@ func is_occluded() -> bool:
 ## Sets occlusion state manually and emits change signal when needed.
 ## @param occluded New occlusion state.
 func set_occluded(occluded: bool) -> void:
-	var was_occluded = _is_occluded
+	var was_occluded: bool = _is_occluded
 	_is_occluded = occluded
 	if was_occluded != _is_occluded:
 		occlusion_changed.emit(_is_occluded)

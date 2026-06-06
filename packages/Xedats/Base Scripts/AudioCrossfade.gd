@@ -123,15 +123,15 @@ func _ready() -> void:
 ## @param delta Delta time in seconds.
 func _process(delta: float) -> void:
 	# Update all active crossfades
-	var completed = []
+	var completed: Array[int] = []
 	for i in range(_active_crossfades.size() - 1, -1, -1):
-		var crossfade = _active_crossfades[i]
+		var crossfade: CrossfadeInfo = _active_crossfades[i]
 		if not _update_crossfade(crossfade, delta):
 			completed.append(i)
 	
 	# Remove completed crossfades
 	for i in completed:
-		var crossfade = _active_crossfades[i]
+		var crossfade: CrossfadeInfo = _active_crossfades[i]
 		_active_crossfades.remove_at(i)
 		crossfade_completed.emit(crossfade)
 
@@ -150,24 +150,23 @@ func _update_crossfade(crossfade: CrossfadeInfo, delta: float) -> bool:
 		if crossfade.source_player:
 			crossfade.source_player.stop()
 		if crossfade.target_player:
-			var target_vol = crossfade.target_player.get_volume_linear()
-			crossfade.target_player.set_volume_linear(target_vol)
+			crossfade.target_player.set_volume_linear_normalized(1.0)
 		
 		return false # Remove from active list
 	
 	# Apply fade curve
-	var curve_value = crossfade.curve.sample(crossfade.progress)
+	var curve_value: float = crossfade.curve.sample(crossfade.progress)
 	
 	# Fade out source
 	if crossfade.source_player:
-		var start_vol = db_to_linear(crossfade.source_player.volume_db)
-		var source_volume = start_vol * (1.0 - curve_value)
-		crossfade.source_player.set_volume_linear(source_volume)
+		var start_vol: float = db_to_linear(crossfade.source_player.volume_db)
+		var source_volume: float = start_vol * (1.0 - curve_value)
+		crossfade.source_player.set_volume_linear_normalized(source_volume)
 	
 	# Fade in target
 	if crossfade.target_player:
-		var target_volume = curve_value
-		crossfade.target_player.set_volume_linear(target_volume)
+		var target_volume: float = curve_value
+		crossfade.target_player.set_volume_linear_normalized(target_volume)
 	
 	return true # Keep in active list
 
@@ -188,12 +187,12 @@ func start_crossfade(source: XedatsPlayer3D, target: XedatsPlayer3D,
 		return null
 	
 	# Start target playing at zero volume
-	target.set_volume_linear(0.0)
+	target.set_volume_linear_normalized(0.0)
 	if not target.playing:
 		target.play()
 	
 	# Create crossfade info
-	var crossfade = CrossfadeInfo.new()
+	var crossfade: CrossfadeInfo = CrossfadeInfo.new()
 	crossfade.source_player = source
 	crossfade.target_player = target
 	crossfade.duration = duration
@@ -217,11 +216,11 @@ func fade_out_player(player: XedatsPlayer3D, duration: float = 1.0, curve: Curve
 		return null
 	
 	# Create a dummy silent player
-	var silent_player = XedatsPlayer3D.new()
+	var silent_player: XedatsPlayer3D = XedatsPlayer3D.new()
 	silent_player.volume_db = linear_to_db(0.0)
 	
 	# Start the crossfade
-	var crossfade = start_crossfade(player, silent_player, duration, curve)
+	var crossfade: CrossfadeInfo = start_crossfade(player, silent_player, duration, curve)
 	
 	return crossfade
 
@@ -238,16 +237,16 @@ func fade_in_player(player: XedatsPlayer3D, duration: float = 1.0,
 		return null
 	
 	# Create a dummy silent player as source
-	var silent_player = XedatsPlayer3D.new()
+	var silent_player: XedatsPlayer3D = XedatsPlayer3D.new()
 	silent_player.volume_db = linear_to_db(0.0)
 	
 	# Start with player at target volume
-	player.set_volume_linear(target_volume)
+	player.set_volume_linear_normalized(target_volume)
 	if not player.playing:
 		player.play()
 	
 	# Fade in
-	var crossfade = start_crossfade(silent_player, player, duration, curve)
+	var crossfade: CrossfadeInfo = start_crossfade(silent_player, player, duration, curve)
 	
 	return crossfade
 
@@ -255,7 +254,7 @@ func fade_in_player(player: XedatsPlayer3D, duration: float = 1.0,
 ## @param crossfade Crossfade to cancel.
 ## @return bool True if cancelled.
 func cancel_crossfade(crossfade: CrossfadeInfo) -> bool:
-	var index = _active_crossfades.find(crossfade)
+	var index: int = _active_crossfades.find(crossfade)
 	if index >= 0:
 		crossfade.is_active = false
 		_active_crossfades.remove_at(index)
@@ -278,12 +277,12 @@ func get_active_crossfade_count() -> int:
 ## @param _ease_type Requested ease type placeholder.
 ## @return Curve Generated curve instance.
 static func create_ease_curve(_ease_type: Tween.EaseType = Tween.EASE_IN_OUT) -> Curve:
-	var curve = Curve.new()
+	var curve: Curve = Curve.new()
 	
 	# For now, create a linear curve. Full ease support would require custom implementation
 	# of easing functions (e.g., ease_in_out_quad, ease_out_cubic, etc.)
 	for i in range(0, 11):
-		var t = float(i) / 10.0
+		var t: float = float(i) / 10.0
 		curve.add_point(Vector2(t, t)) # Linear interpolation
 	
 	return curve
@@ -292,7 +291,7 @@ static func create_ease_curve(_ease_type: Tween.EaseType = Tween.EASE_IN_OUT) ->
 ## @param points Control points in normalized time/value space.
 ## @return Curve Generated curve instance.
 static func create_custom_curve(points: Array[Vector2]) -> Curve:
-	var curve = Curve.new()
+	var curve: Curve = Curve.new()
 	for point in points:
 		curve.add_point(point)
 	return curve

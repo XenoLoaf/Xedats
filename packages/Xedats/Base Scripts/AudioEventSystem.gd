@@ -162,7 +162,7 @@ signal event_creation_failed(event_name: String, reason: String)
 
 ## Registers this subsystem with XedatsSingleton on ready.
 func _ready() -> void:
-	var xedats = XedatsSingleton.instance()
+	var xedats: XedatsSingleton = XedatsSingleton.instance()
 	if xedats:
 		xedats._register_event_system(self )
 
@@ -183,7 +183,7 @@ func register_event(event_name: String, audio_container: AudioArrayContainer,
 	if _audio_events.has(event_name):
 		push_warning("Xedats: Event '%s' already registered, updating..." % event_name)
 	
-	var event = AudioEvent.new(event_name, audio_container)
+	var event: AudioEvent = AudioEvent.new(event_name, audio_container)
 	event.default_volume = clamp(default_volume, 0.0, 1.0)
 	event.default_pitch = clamp(default_pitch, 0.5, 2.0)
 	event.audio_category = audio_category
@@ -227,7 +227,7 @@ func trigger_event(event_name: String,
 				  position: Vector3 = Vector3.ZERO,
 				  volume_override: float = -1.0,
 				  pitch_override: float = -1.0) -> XedatsPlayer3D:
-	var event = _audio_events.get(event_name)
+	var event: AudioEvent = _audio_events.get(event_name)
 	if not event:
 		event_creation_failed.emit(event_name, "Event not registered")
 		push_error("Xedats: Event '%s' not registered" % event_name)
@@ -243,21 +243,15 @@ func trigger_event(event_name: String,
 		return null
 	
 	# Create player
+	var xedats: XedatsSingleton = XedatsSingleton.instance()
+	if not xedats:
+		push_error("Xedats: XedatsSingleton not available")
+		return null
 	var player: XedatsPlayer3D
 	if event.is_3d:
-		var xedats = XedatsSingleton.instance()
-		if xedats:
-			player = xedats.create_player_3d(position)
-		else:
-			push_error("Xedats: XedatsSingleton not available")
-			return null
+		player = xedats.create_player_3d(position)
 	else:
-		var xedats = XedatsSingleton.instance()
-		if xedats:
-			player = xedats.get_player_from_pool()
-		else:
-			push_error("Xedats: XedatsSingleton not available")
-			return null
+		player = xedats.get_player_from_pool()
 	
 	if not player:
 		event_creation_failed.emit(event_name, "Failed to create player")
@@ -267,12 +261,12 @@ func trigger_event(event_name: String,
 	player.audio_category = event.audio_category
 	
 	# Apply volume
-	var final_volume = volume_override if volume_override >= 0 else event.default_volume
+	var final_volume: float = volume_override if volume_override >= 0 else event.default_volume
 	final_volume *= event.audio_container.get_random_volume()
 	player.volume_db = linear_to_db(clamp(final_volume, 0.0, 1.0))
 	
 	# Apply pitch
-	var final_pitch = pitch_override if pitch_override >= 0 else event.default_pitch
+	var final_pitch: float = pitch_override if pitch_override >= 0 else event.default_pitch
 	final_pitch *= event.audio_container.get_random_pitch()
 	player.pitch_scale = clamp(final_pitch, 0.5, 2.0)
 	
@@ -283,10 +277,10 @@ func trigger_event(event_name: String,
 	event.current_playback_count += 1
 	_record_playback(event_name)
 	
-	# Connect finished signal to decrement count
-	player.audio_finished_custom.connect(func(_p):
+	# Connect finished signal to decrement count (one-shot prevents accumulation on pooled players)
+	player.audio_finished_custom.connect(func(_p: XedatsPlayer3D):
 		event.current_playback_count = max(0, event.current_playback_count - 1)
-	)
+	, CONNECT_ONE_SHOT)
 	
 	event_triggered.emit(event_name, player)
 	
@@ -297,9 +291,9 @@ func trigger_event(event_name: String,
 ## @param params Dictionary with optional keys: position, volume, pitch.
 ## @return XedatsPlayer3D Created player or null on failure.
 func trigger_event_with_params(event_name: String, params: Dictionary) -> XedatsPlayer3D:
-	var position = params.get("position", Vector3.ZERO)
-	var volume = params.get("volume", -1.0)
-	var pitch = params.get("pitch", -1.0)
+	var position: Vector3 = params.get("position", Vector3.ZERO)
+	var volume: float = params.get("volume", -1.0)
+	var pitch: float = params.get("pitch", -1.0)
 	
 	return trigger_event(event_name, position, volume, pitch)
 
@@ -318,11 +312,11 @@ func _record_playback(event_name: String) -> void:
 ## @param event_name Event identifier.
 ## @return Dictionary Statistics dictionary, or empty if missing.
 func get_event_stats(event_name: String) -> Dictionary:
-	var event = _audio_events.get(event_name)
+	var event: AudioEvent = _audio_events.get(event_name)
 	if not event:
 		return {}
 	
-	var total_playbacks = _event_playback_history.filter(
+	var total_playbacks: int = _event_playback_history.filter(
 		func(entry): return entry["event"] == event_name
 	).size()
 	
@@ -338,7 +332,7 @@ func get_event_stats(event_name: String) -> Dictionary:
 ## Gets aggregated playback stats for all events.
 ## @return Dictionary Map of event name to stat dictionary.
 func get_all_stats() -> Dictionary:
-	var stats = {}
+	var stats: Dictionary = {}
 	for event_name in _audio_events.keys():
 		stats[event_name] = get_event_stats(event_name)
 	return stats
@@ -347,7 +341,7 @@ func get_all_stats() -> Dictionary:
 ## @param event_name Event identifier.
 ## @param max_count Maximum active instances (-1 for unlimited).
 func set_event_max_playback(event_name: String, max_count: int) -> void:
-	var event = _audio_events.get(event_name)
+	var event: AudioEvent = _audio_events.get(event_name)
 	if event:
 		event.max_playback_count = max_count
 
@@ -356,7 +350,7 @@ func set_event_max_playback(event_name: String, max_count: int) -> void:
 ## @param key Metadata key.
 ## @param value Metadata value.
 func set_event_metadata(event_name: String, key: String, value: Variant) -> void:
-	var event = _audio_events.get(event_name)
+	var event: AudioEvent = _audio_events.get(event_name)
 	if event:
 		event.metadata[key] = value
 
@@ -365,7 +359,7 @@ func set_event_metadata(event_name: String, key: String, value: Variant) -> void
 ## @param key Metadata key.
 ## @return Variant Metadata value or null when missing.
 func get_event_metadata(event_name: String, key: String) -> Variant:
-	var event = _audio_events.get(event_name)
+	var event: AudioEvent = _audio_events.get(event_name)
 	if event and event.metadata.has(key):
 		return event.metadata[key]
 	return null

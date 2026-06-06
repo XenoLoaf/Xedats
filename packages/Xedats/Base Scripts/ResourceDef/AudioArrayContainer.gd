@@ -120,7 +120,7 @@ func _get_random_no_repeat() -> AudioStream:
 		return StreamContainer[0] if not StreamContainer.is_empty() else null
 	
 	var new_index: int
-	var attempts = 0
+	var attempts: int = 0
 	while attempts < 10: # Prevent infinite loop
 		new_index = randi() % StreamContainer.size()
 		if new_index != _last_random_index:
@@ -144,7 +144,7 @@ func get_random_pitch() -> float:
 ## Provides custom property list and emits warning when container has no streams.
 ## @return Array[Dictionary] Property list entries.
 func _get_property_list() -> Array[Dictionary]:
-	var properties = []
+	var properties: Array[Dictionary] = []
 	
 	# Add validation for stream container
 	if StreamContainer.is_empty():

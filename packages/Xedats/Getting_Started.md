@@ -28,7 +28,7 @@ Xedats is accessed through its singleton. Always null-check before using it so y
 degrades gracefully if the system is absent (e.g., in unit tests or stripped builds).
 
 ```gdscript
-var audio := XedatsSingleton.instance()
+var audio: XedatsSingleton = XedatsSingleton.instance()
 if audio:
     # safe to use
 ```
@@ -61,7 +61,7 @@ scalar (0.0–1.0 normalized linear), and a category.
 
 ```gdscript
 func _play_footstep(pos: Vector3) -> void:
-    var audio := XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio:
         return
     audio.play_audio_at_position(footstep_stream, pos, 0.7, "SFX")
@@ -107,10 +107,10 @@ func close() -> void:
 func _play_sfx(stream: AudioStream) -> void:
     if stream == null:
         return
-    var audio := XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio:
         return
-    var player := audio.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.stream = stream
     player.volume_db = linear_to_db(sfx_volume)
@@ -160,10 +160,10 @@ func interact(interactor: PlayerController) -> void:
 func _play_sfx(stream: AudioStream, volume: float = 0.8) -> void:
     if stream == null:
         return
-    var audio := XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio:
         return
-    var player := audio.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.stream = stream
     player.volume_db = linear_to_db(volume)
@@ -185,7 +185,7 @@ anywhere without carrying stream references around.
 
 ```gdscript
 func _register_audio_events() -> void:
-    var aes := AudioEventSystem.instance()
+    var aes: AudioEventSystem = AudioEventSystem.instance()
     if not aes:
         return
 
@@ -199,7 +199,7 @@ func _register_audio_events() -> void:
 ```gdscript
 func interact(interactor: PlayerController) -> void:
     super(interactor)
-    var audio := XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         audio.trigger_audio_event("door_open", global_position)
 ```
@@ -207,12 +207,12 @@ func interact(interactor: PlayerController) -> void:
 ### 6c. Triggering with parameter overrides
 
 ```gdscript
-var params := {
+var params: Dictionary = {
     "position": global_position,
     "volume":   0.3,    # quieter than the default
     "pitch":    0.85,   # lower pitch
 }
-audio.trigger_audio_event_with_params("door_open", params)
+audio.get_event_system().trigger_event_with_params("door_open", params)
 ```
 
 ### 6d. Limiting simultaneous playbacks
@@ -237,10 +237,10 @@ ideal for footsteps, impacts, voice barks, or any sound that should not repeat i
 func _play_footstep(surface_index: int) -> void:
     if surface_index >= footstep_surfaces.size():
         return
-    var audio := XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio:
         return
-    var player := audio.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.play_random_from_container(footstep_surfaces[surface_index])
 ```
@@ -256,24 +256,24 @@ volume preferences so they survive between sessions.
 # In a settings menu script
 
 func _on_sfx_slider_changed(value: float) -> void:
-    var audio := XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         audio.set_category_volume("SFX", value)
 
 func _on_apply_button_pressed() -> void:
-    var state := AudioStateManager.instance()
+    var state: AudioStateManager = AudioStateManager.instance()
     if state:
         state.save_audio_state()  # Writes to user://AudioConfig/audio_state.json
 
 func _ready() -> void:
-    var state := AudioStateManager.instance()
+    var state: AudioStateManager = AudioStateManager.instance()
     if state:
         state.load_audio_state()  # Restore saved preferences on startup
 ```
 
 To reset to factory defaults:
 ```gdscript
-var state := AudioStateManager.instance()
+var state: AudioStateManager = AudioStateManager.instance()
 if state:
     state.reset_audio_state()
 ```
@@ -324,11 +324,11 @@ func _play_sfx(stream: AudioStream, volume_override: float = -1.0) -> void:
         return
     _sfx_cooldown_timer = sfx_cooldown
 
-    var vol := volume_override if volume_override >= 0.0 else sfx_volume
-    var audio := XedatsSingleton.instance()
+    var vol: float = volume_override if volume_override >= 0.0 else sfx_volume
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio:
         return
-    var player := audio.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.stream = stream
     player.volume_db = linear_to_db(vol)
@@ -391,7 +391,7 @@ stay thin.
 var _ambient_player: XedatsPlayer3D = null
 
 func _start_ambient() -> void:
-    var audio := XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio:
         return
     _ambient_player = audio.create_player_3d(global_position)
@@ -484,11 +484,11 @@ simple category workflows while still moving individual sounds between base and 
 
 ```gdscript
 func _play_door(stream: AudioStream) -> void:
-    var audio := XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio or stream == null:
         return
 
-    var player := audio.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio.create_player_3d(global_position)
     player.stream = stream
 
     # Base lane: SFX
@@ -503,7 +503,7 @@ Use `use_effect_bus = true` when you want the category's effect lane (for exampl
 
 ```gdscript
 func _promote_to_effect_lane(player: XedatsPlayer3D) -> void:
-    var audio := XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio or not is_instance_valid(player):
         return
 
@@ -512,7 +512,7 @@ func _promote_to_effect_lane(player: XedatsPlayer3D) -> void:
 
 
 func _route_to_custom_bus(player: XedatsPlayer3D) -> void:
-    var audio := XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio or not is_instance_valid(player):
         return
 

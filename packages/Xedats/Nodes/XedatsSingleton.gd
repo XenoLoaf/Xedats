@@ -204,7 +204,7 @@ var _audio_crossfade: AudioCrossfade
 
 ## @var _performance_stats
 ## Dictionary containing real-time performance metrics for monitoring audio system health.
-var _performance_stats = {
+var _performance_stats: Dictionary = {
 	"frame_times": [],
 	"active_player_count": 0,
 	"peak_active_players": 0,
@@ -275,7 +275,7 @@ func _ready() -> void:
 	add_child(_audio_crossfade)
 	
 	# Set up auto cleanup timer
-	var timer = Timer.new()
+	var timer: Timer = Timer.new()
 	timer.wait_time = auto_cleanup_interval
 	timer.autostart = true
 	timer.timeout.connect(_cleanup_inactive_players)
@@ -283,7 +283,7 @@ func _ready() -> void:
 	
 	# Set up performance monitoring timer
 	if enable_performance_monitoring:
-		var perf_timer = Timer.new()
+		var perf_timer: Timer = Timer.new()
 		perf_timer.wait_time = 1.0 / 60.0 # Update every frame
 		perf_timer.autostart = true
 		perf_timer.timeout.connect(_update_performance_stats)
@@ -302,7 +302,7 @@ func _exit_tree() -> void:
 func _initialize_audio_system() -> void:
 	# Pre-populate player pool
 	for i in default_player_pool_size:
-		var player = _create_player()
+		var player: XedatsPlayer3D = _create_player()
 		_player_pool.append(player)
 	
 	if enable_debug_logging:
@@ -356,14 +356,14 @@ func return_player_to_pool(player: XedatsPlayer3D) -> void:
 ## Creates a new pooled player node and adds it under the singleton.
 ## @return XedatsPlayer3D Newly created player instance.
 func _create_player() -> XedatsPlayer3D:
-	var player = XedatsPlayer3D.new()
+	var player: XedatsPlayer3D = XedatsPlayer3D.new()
 	player.name = "XedatsPlayer_%d" % randi()
 	add_child(player)
 	return player
 
 ## Automatically cleans up inactive audio players and returns them to the pool.
 func _cleanup_inactive_players() -> void:
-	var to_remove = []
+	var to_remove: Array[XedatsPlayer3D] = []
 	for player in _active_players:
 		if not player.playing:
 			to_remove.append(player)
@@ -380,7 +380,7 @@ func _cleanup_inactive_players() -> void:
 ## @param parent Optional parent node to attach the player to.
 ## @return XedatsPlayer3D Ready-to-use player.
 func create_player_3d(position: Vector3 = Vector3.ZERO, parent: Node = null) -> XedatsPlayer3D:
-	var player = get_player_from_pool()
+	var player: XedatsPlayer3D = get_player_from_pool()
 	player.global_position = position
 	
 	if parent:
@@ -394,7 +394,7 @@ func create_player_3d(position: Vector3 = Vector3.ZERO, parent: Node = null) -> 
 ## @param parent: Optional parent node to attach the listener to. If null, listener is added to this node.
 ## @return XedatsListener3D: A ready-to-use audio listener positioned at the specified location.
 func create_listener_3d(position: Vector3 = Vector3.ZERO, parent: Node = null) -> XedatsListener3D:
-	var listener = XedatsListener3D.new()
+	var listener: XedatsListener3D = XedatsListener3D.new()
 	listener.name = "XedatsListener_%d" % randi()
 	listener.global_position = position
 	
@@ -519,12 +519,12 @@ func create_audio_bus(bus_name: String, parent_bus: String = "Master") -> int:
 			AudioServer.set_bus_send(existing_index, normalized_parent_bus)
 		return existing_index
 	
-	var bus_index = AudioServer.bus_count
+	var bus_index: int = AudioServer.bus_count
 	AudioServer.add_bus(bus_index)
 	AudioServer.set_bus_name(bus_index, normalized_bus_name)
 	
 	# Set parent bus
-	var parent_index = AudioServer.get_bus_index(normalized_parent_bus)
+	var parent_index: int = AudioServer.get_bus_index(normalized_parent_bus)
 	if parent_index >= 0 and normalized_bus_name != "Master":
 		AudioServer.set_bus_send(bus_index, normalized_parent_bus)
 	
@@ -574,8 +574,8 @@ func add_bus_effect(bus_name: String, effect: AudioEffect) -> int:
 		push_error("Xedats: Audio bus '%s' does not exist" % bus_name)
 		return -1
 	
-	var bus_index = _custom_buses[normalized_bus_name]
-	var effect_index = AudioServer.get_bus_effect_count(bus_index)
+	var bus_index: int = _custom_buses[normalized_bus_name]
+	var effect_index: int = AudioServer.get_bus_effect_count(bus_index)
 	
 	AudioServer.add_bus_effect(bus_index, effect, effect_index)
 	_bus_effects[normalized_bus_name].append({
@@ -600,7 +600,7 @@ func remove_bus_effect(bus_name: String, effect_index: int) -> void:
 		push_error("Xedats: Audio bus '%s' does not exist" % bus_name)
 		return
 	
-	var bus_index = _custom_buses[normalized_bus_name]
+	var bus_index: int = _custom_buses[normalized_bus_name]
 	if effect_index < 0 or effect_index >= AudioServer.get_bus_effect_count(bus_index):
 		push_error("Xedats: Invalid effect index %d for bus '%s'" % [effect_index, bus_name])
 		return
@@ -608,7 +608,7 @@ func remove_bus_effect(bus_name: String, effect_index: int) -> void:
 	AudioServer.remove_bus_effect(bus_index, effect_index)
 	
 	# Update stored effects
-	var effects = _bus_effects[normalized_bus_name]
+	var effects: Array = _bus_effects[normalized_bus_name]
 	for i in range(effects.size()):
 		if effects[i]["index"] == effect_index:
 			effects.remove_at(i)
@@ -669,7 +669,7 @@ func _update_category_volumes() -> void:
 	# Update all active players with category volumes
 	for player in _active_players:
 		if player.audio_category in _category_volumes:
-			var base_volume = get_category_volume(player.audio_category)
+			var base_volume: float = get_category_volume(player.audio_category)
 			player.volume_db = linear_to_db(base_volume)
 
 
@@ -716,7 +716,7 @@ func route_player_to_category(
 ## @param category Audio category for volume grouping. Defaults to [code]"SFX"[/code].
 ## @return The [XedatsPlayer3D] used for playback; returned to the pool once playback ends.
 func play_audio_at_position(stream: AudioStream, position: Vector3, volume: float = 1.0, category: String = "SFX") -> XedatsPlayer3D:
-	var player = create_player_3d(position)
+	var player: XedatsPlayer3D = create_player_3d(position)
 	player.stream = stream
 	player.volume_db = linear_to_db(volume)
 	player.audio_category = category
@@ -734,7 +734,7 @@ func play_audio_at_position(stream: AudioStream, position: Vector3, volume: floa
 ## @param category Audio category for volume grouping. Defaults to [code]"SFX"[/code].
 ## @return The [XedatsPlayer3D] used for playback; returned to the pool once playback ends.
 func play_audio_container_at_position(container: AudioArrayContainer, position: Vector3, category: String = "SFX") -> XedatsPlayer3D:
-	var player = create_player_3d(position)
+	var player: XedatsPlayer3D = create_player_3d(position)
 	player.audio_category = category
 	player.bus = resolve_bus_name(category)
 	player.play_random_from_container(container)
@@ -780,9 +780,9 @@ func get_active_player_bus_routes() -> Array[Dictionary]:
 ## Returns custom bus metadata and effect counts.
 ## @return Dictionary Bus info keyed by bus name.
 func get_bus_info() -> Dictionary:
-	var info = {}
+	var info: Dictionary = {}
 	for bus_name: String in get_audio_bus_names():
-		var bus_index = AudioServer.get_bus_index(bus_name)
+		var bus_index: int = AudioServer.get_bus_index(bus_name)
 		if bus_index < 0:
 			continue
 		info[bus_name] = {
@@ -833,7 +833,7 @@ func _update_performance_stats() -> void:
 		_performance_stats["peak_active_players"] = _active_players.size()
 	
 	# Get frame time from the performance monitor
-	var frame_time = Engine.get_frames_drawn()
+	var frame_time: int = Engine.get_frames_drawn()
 	_performance_stats["frame_times"].append({
 		"frame": frame_time,
 		"active_players": _active_players.size(),
@@ -848,7 +848,7 @@ func _update_performance_stats() -> void:
 ## Gets aggregated performance metrics snapshot.
 ## @return Dictionary Aggregated metric values.
 func get_performance_metrics() -> Dictionary:
-	var metrics = {
+	var metrics: Dictionary = {
 		"active_players": _performance_stats["active_player_count"],
 		"pooled_players": _player_pool.size(),
 		"peak_active_players": _performance_stats["peak_active_players"],
@@ -862,8 +862,8 @@ func get_performance_metrics() -> Dictionary:
 	
 	# Calculate averages from recent frame history
 	if _performance_stats["frame_times"].size() > 0:
-		var recent_frames = _performance_stats["frame_times"].slice(-60) # Last ~1 second at 60fps
-		var total_players = 0
+		var recent_frames: Array = _performance_stats["frame_times"].slice(-60) # Last ~1 second at 60fps
+		var total_players: int = 0
 		for frame_data in recent_frames:
 			total_players += frame_data["active_players"]
 		metrics["average_active_players"] = float(total_players) / recent_frames.size()
@@ -880,7 +880,7 @@ func get_performance_history() -> Array:
 ## pool fill percentage, peak active players, active listener count, and custom bus count.
 ## Only available when [member enable_performance_monitoring] is [code]true[/code].
 func print_performance_report() -> void:
-	var metrics = get_performance_metrics()
+	var metrics: Dictionary = get_performance_metrics()
 	
 	print("\n========== XEDATS PERFORMANCE REPORT ==========")
 	print("Active Players: %d / %d" % [metrics["active_players"], metrics["max_simultaneous_sounds"]])
@@ -958,8 +958,8 @@ func load_audio_state() -> bool:
 ## Builds a high-level system health report with warning list.
 ## @return Dictionary Health status and warning entries.
 func get_system_health() -> Dictionary:
-	var metrics = get_performance_metrics()
-	var health = {
+	var metrics: Dictionary = get_performance_metrics()
+	var health: Dictionary = {
 		"status": "healthy",
 		"capacity_usage_percent": 0.0,
 		"warnings": []

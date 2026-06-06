@@ -154,7 +154,7 @@ func _parse_document_extensions(state: GLTFState, parse_cache: Dictionary) -> vo
 	if state_json.has("materials"):
 		var materials_array: Array = state_json["materials"]
 		var parsed_materials: Dictionary = parse_cache.get("omi_materials", {})
-		for material_index in range(materials_array.size()):
+		for material_index: int in range(materials_array.size()):
 			var material_json: Variant = materials_array[material_index]
 			if material_json is Dictionary:
 				var material_dict: Dictionary = material_json
@@ -199,7 +199,7 @@ func _resolve_emitter_payload(state: GLTFState, parse_cache: Dictionary, gltf_no
 	var precomputed_payload: Dictionary = _resolve_precomputed_propagation_payload(validated_extras, emitter_index)
 	var source_indices: Array[int] = _get_emitter_source_indices(emitter_data)
 	var source_paths: Array[String] = []
-	for source_index in source_indices:
+	for source_index: int in source_indices:
 		var source_path: String = _resolve_source_path(state, parse_cache, source_index)
 		if not source_path.is_empty():
 			source_paths.append(source_path)
@@ -379,7 +379,7 @@ func _resolve_material_payload(parse_cache: Dictionary, gltf_node: GLTFNode, nod
 		return {}
 
 	var primitives: Array = mesh_json["primitives"]
-	for primitive_variant in primitives:
+	for primitive_variant: Variant in primitives:
 		if primitive_variant is Dictionary:
 			var primitive: Dictionary = primitive_variant
 			if primitive.has("material"):
@@ -850,20 +850,20 @@ func _parse_weight_value(value: Variant) -> float:
 		return clamp(float(value), 0.0, 1.0)
 	if value is Array:
 		var numeric_values: Array[float] = []
-		for entry in value:
+		for entry: Variant in value:
 			if entry is float or entry is int:
 				numeric_values.append(float(entry))
 		if numeric_values.is_empty():
 			return 0.0
 		var total: float = 0.0
-		for numeric_value in numeric_values:
+		for numeric_value: float in numeric_values:
 			total += numeric_value
 		return clamp(total / float(numeric_values.size()), 0.0, 1.0)
 	if value is Dictionary:
 		var dict_value: Dictionary = value
 		var keys: Array[String] = ["x", "y", "z", "r", "g", "b"]
 		var values: Array[float] = []
-		for key in keys:
+		for key: String in keys:
 			if dict_value.has(key):
 				var component: Variant = dict_value[key]
 				if component is float or component is int:
@@ -871,7 +871,7 @@ func _parse_weight_value(value: Variant) -> float:
 		if values.is_empty():
 			return 0.0
 		var summed: float = 0.0
-		for component_value in values:
+		for component_value: float in values:
 			summed += component_value
 		return clamp(summed / float(values.size()), 0.0, 1.0)
 	return 0.0
@@ -998,7 +998,7 @@ func _get_emitter_source_indices(emitter_data: Dictionary) -> Array[int]:
 	if emitter_data.has("sources"):
 		var sources_variant: Variant = emitter_data.get("sources")
 		if sources_variant is Array:
-			for source_variant in sources_variant:
+			for source_variant: Variant in sources_variant:
 				if source_variant is int or source_variant is float:
 					indices.append(int(source_variant))
 	if emitter_data.has("source"):
@@ -1015,7 +1015,7 @@ func _get_emitter_source_indices(emitter_data: Dictionary) -> Array[int]:
 func _as_dictionary_array(raw_value: Variant) -> Array[Dictionary]:
 	var parsed: Array[Dictionary] = []
 	if raw_value is Array:
-		for entry in raw_value:
+		for entry: Variant in raw_value:
 			if entry is Dictionary:
 				parsed.append(entry)
 	return parsed

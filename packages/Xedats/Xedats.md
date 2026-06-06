@@ -36,9 +36,9 @@ For runtime route inspection in debug tools, use:
 Typical workflow:
 
 ```gdscript
-var audio := XedatsSingleton.instance()
+var audio: XedatsSingleton = XedatsSingleton.instance()
 if audio:
-    var player := audio.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio.create_player_3d(global_position)
     player.stream = my_stream
 
     # Route to SFX base lane.
@@ -60,6 +60,8 @@ for example when assigning `player.bus` directly in custom workflows.
 Xedats is designed as a **generic Godot addon** that works in any project. All examples use generic file paths like `res://audio/...` rather than project-specific directories. While the examples reference common game audio scenarios (character footsteps, door sounds, etc.), these patterns are universally applicable across different game types and genres.
 
 ## Dependencies
+
+**This standalone Xedats package does not require AutoloadManager.**
 
 Call `XedatsSingleton.instance()` when you want the runtime to initialize. The standalone singleton lazily creates itself and attaches to the active scene tree root.
 
@@ -98,7 +100,7 @@ Those tooling layers are intentionally outside the scope of this standalone runt
 ### 1. Access the Singleton
 
 ```gdscript
-var audio = XedatsSingleton.instance()
+var audio: XedatsSingleton = XedatsSingleton.instance()
 if audio:
     # Use the audio system
     pass
@@ -107,10 +109,10 @@ if audio:
 ### 2. Play a Simple Sound
 
 ```gdscript
-var stream = preload("res://path/to/sound.ogg")
-var audio = XedatsSingleton.instance()
+var stream: AudioStream = preload("res://path/to/sound.ogg")
+var audio: XedatsSingleton = XedatsSingleton.instance()
 if audio:
-    var player = audio.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio.create_player_3d(global_position)
     player.stream = stream
     player.play()
 ```
@@ -149,11 +151,11 @@ func play_footstep() -> void:
     if not audio_system:
         return
     
-    var container = footstep_sounds.get(terrain_type)
+    var container: AudioArrayContainer = footstep_sounds.get(terrain_type) as AudioArrayContainer
     if not container:
         return
     
-    var player = audio_system.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.play_random_from_container(container)
     
@@ -174,7 +176,7 @@ func play_jump_sound() -> void:
         return
     
     var jump_sound = preload("res://audio/movement/jump.ogg")
-    var player = audio_system.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.stream = jump_sound
     player.pitch_scale = randf_range(0.95, 1.05)
@@ -186,7 +188,7 @@ func play_landing_sound(impact_force: float = 1.0) -> void:
         return
     
     var landing_sound = preload("res://audio/movement/land.ogg")
-    var player = audio_system.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.stream = landing_sound
     
@@ -217,8 +219,8 @@ func play_sprint_footsteps() -> void:
     if not audio_system:
         return
     
-    var container = footstep_sounds.get(terrain_type)
-    var player = audio_system.create_player_3d(global_position)
+    var container: AudioArrayContainer = footstep_sounds.get(terrain_type) as AudioArrayContainer
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.pitch_scale = 1.2  # Higher pitch for faster movement
     player.set_volume_linear_normalized(0.8)  # Louder steps
     player.play_random_from_container(container)
@@ -227,8 +229,8 @@ func play_walk_footsteps() -> void:
     if not audio_system:
         return
     
-    var container = footstep_sounds.get(terrain_type)
-    var player = audio_system.create_player_3d(global_position)
+    var container: AudioArrayContainer = footstep_sounds.get(terrain_type) as AudioArrayContainer
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.pitch_scale = 1.0  # Normal pitch
     player.set_volume_linear_normalized(0.6)  # Normal volume
     player.play_random_from_container(container)
@@ -237,8 +239,8 @@ func play_sneak_footsteps() -> void:
     if not audio_system:
         return
     
-    var container = footstep_sounds.get(terrain_type)
-    var player = audio_system.create_player_3d(global_position)
+    var container: AudioArrayContainer = footstep_sounds.get(terrain_type) as AudioArrayContainer
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.pitch_scale = 0.9  # Slightly lower pitch
     player.set_volume_linear_normalized(0.3)  # Very quiet
     player.play_random_from_container(container)
@@ -264,8 +266,8 @@ func play_breathing_sound() -> void:
     if not audio_system:
         return
     
-    var breathing_sound = preload("res://audio/movement/breathing.ogg")
-    var player = audio_system.create_player_3d(global_position)
+    var breathing_sound: AudioStream = preload("res://audio/movement/breathing.ogg")
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.stream = breathing_sound
     
@@ -310,7 +312,7 @@ func open_door() -> void:
     play_door_sound(open_sound_container, "high")
     
     # Animate door opening
-    var tween = create_tween()
+    var tween: Tween = create_tween()
     tween.tween_property(self, "rotation.y", PI / 2, 0.5)
 
 func close_door() -> void:
@@ -321,14 +323,14 @@ func close_door() -> void:
     play_door_sound(close_sound_container, "low")
     
     # Animate door closing
-    var tween = create_tween()
+    var tween: Tween = create_tween()
     tween.tween_property(self, "rotation.y", 0.0, 0.5)
 
 func play_door_sound(container: AudioArrayContainer, pitch_variant: String) -> void:
     if not audio_system or not container:
         return
     
-    var player = audio_system.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.play_random_from_container(container)
     
@@ -343,8 +345,8 @@ func try_open_locked() -> void:
         return
     
     # Play locked door sound
-    var locked_sound = preload("res://audio/interactables/door_locked.ogg")
-    var player = audio_system.create_player_3d(global_position)
+    var locked_sound: AudioStream = preload("res://audio/interactables/door_locked.ogg")
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.stream = locked_sound
     player.play()
@@ -380,7 +382,7 @@ func open() -> void:
     is_open = true
     
     # Play opening sound
-    var player = audio_system.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.stream = open_sound
     player.pitch_scale = randf_range(0.95, 1.05)
@@ -389,13 +391,13 @@ func open() -> void:
     # Play secondary sound if chest is empty
     if not has_items:
         await get_tree().create_timer(0.3).timeout
-        var empty_player = audio_system.create_player_3d(global_position)
+        var empty_player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
         empty_player.audio_category = "SFX"
         empty_player.stream = empty_sound
         empty_player.play()
     
     # Animate opening
-    var tween = create_tween()
+    var tween: Tween = create_tween()
     tween.tween_property(self, "rotation.x", -PI / 4, 0.4)
 
 func close() -> void:
@@ -405,14 +407,14 @@ func close() -> void:
     is_open = false
     
     # Play closing sound
-    var player = audio_system.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.stream = close_sound
     player.pitch_scale = randf_range(0.95, 1.05)
     player.play()
     
     # Animate closing
-    var tween = create_tween()
+    var tween: Tween = create_tween()
     tween.tween_property(self, "rotation.x", 0.0, 0.4)
 ```
 
@@ -464,11 +466,11 @@ For more complex audio scenarios, use the **Audio Event System** for centralized
 ```gdscript
 # In your game manager or level setup
 func setup_audio_events() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio:
         return
     
-    var event_system = audio.get_event_system()
+    var event_system: AudioEventSystem = audio.get_event_system()
     
     # Register player events
     event_system.register_event(
@@ -508,21 +510,21 @@ func setup_audio_events() -> void:
 
 ```gdscript
 func play_footstep_via_event() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         audio.trigger_audio_event("player_footstep_grass", global_position)
 
 func play_jump_via_event() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         audio.trigger_audio_event("player_jump", global_position)
 
 # With parameter overrides
 func play_quiet_door_open() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
-        var event_system = audio.get_event_system()
-        var params = {
+        var event_system: AudioEventSystem = audio.get_event_system()
+        var params: Dictionary = {
             "position": global_position,
             "volume": 0.4,  # Override default volume
             "pitch": 0.95   # Override default pitch
@@ -539,7 +541,7 @@ Organize audio into categories for independent volume control:
 ```gdscript
 # Setup custom audio buses (typically in your AudioManager)
 func setup_audio_buses() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio:
         return
     
@@ -554,27 +556,27 @@ func setup_audio_buses() -> void:
 
 # Control volume by category
 func set_sfx_volume(volume: float) -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         audio.set_category_volume("SFX", clamp(volume, 0.0, 1.0))
 
 func set_music_volume(volume: float) -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         audio.set_category_volume("Music", clamp(volume, 0.0, 1.0))
 
 func mute_sfx() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         audio.set_category_volume("SFX", 0.0)
 
 func unmute_sfx() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         audio.set_category_volume("SFX", 1.0)
 
 func get_master_volume() -> float:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         return audio.get_category_volume("Master")
     return 1.0
@@ -593,13 +595,13 @@ func get_master_volume() -> float:
 # - pitch_variation: Vector2(min, max) random pitch multiplier range
 
 # Usage in code:
-var footstep_container = preload("res://audio/footsteps/grass.tres")
-var player = audio_system.create_player_3d(position)
+var footstep_container: AudioArrayContainer = preload("res://audio/footsteps/grass.tres")
+var player: XedatsPlayer3D = audio_system.create_player_3d(position)
 player.play_random_from_container(footstep_container)
 
 # Access random variations
-var random_volume = footstep_container.get_random_volume()  # Based on volume_variation range
-var random_pitch = footstep_container.get_random_pitch()    # Based on pitch_variation range
+var random_volume: float = footstep_container.get_random_volume()  # Based on volume_variation range
+var random_pitch: float = footstep_container.get_random_pitch()    # Based on pitch_variation range
 ```
 
 ---
@@ -611,23 +613,23 @@ Smoothly transition between sounds:
 ```gdscript
 # Fade between two players
 func crossfade_music(from_player: XedatsPlayer3D, to_player: XedatsPlayer3D) -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
-        var crossfade = audio.get_crossfade_system()
+        var crossfade: AudioCrossfade = audio.get_crossfade_system()
         crossfade.start_crossfade(from_player, to_player, 2.0)  # 2 second fade
 
 # Fade out a single player
 func fade_out_music(player: XedatsPlayer3D) -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
-        var crossfade = audio.get_crossfade_system()
+        var crossfade: AudioCrossfade = audio.get_crossfade_system()
         crossfade.fade_out_player(player, 2.0)
 
 # Fade in a single player
 func fade_in_music(player: XedatsPlayer3D, target_volume: float = 1.0) -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
-        var crossfade = audio.get_crossfade_system()
+        var crossfade: AudioCrossfade = audio.get_crossfade_system()
         crossfade.fade_in_player(player, 2.0, target_volume)
 ```
 
@@ -640,33 +642,33 @@ Automatically save and load audio settings:
 ```gdscript
 # Save audio state to disk
 func save_audio_settings() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
-        var state_manager = audio.get_state_manager()
+        var state_manager: AudioStateManager = audio.get_state_manager()
         state_manager.save_audio_state()
         print("Audio settings saved")
 
 # Load audio state from disk
 func load_audio_settings() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
-        var state_manager = audio.get_state_manager()
+        var state_manager: AudioStateManager = audio.get_state_manager()
         state_manager.load_audio_state()
         print("Audio settings loaded")
 
 # Get current state
 func get_audio_state() -> Dictionary:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
-        var state_manager = audio.get_state_manager()
+        var state_manager: AudioStateManager = audio.get_state_manager()
         return state_manager.get_state()
     return {}
 
 # Reset to defaults
 func reset_audio_settings() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
-        var state_manager = audio.get_state_manager()
+        var state_manager: AudioStateManager = audio.get_state_manager()
         state_manager.reset_audio_state()
         print("Audio settings reset to defaults")
 ```
@@ -680,33 +682,33 @@ Track audio system performance:
 ```gdscript
 # Get performance metrics
 func check_audio_performance() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
-        var metrics = audio.get_performance_metrics()
+        var metrics: Dictionary = audio.get_performance_metrics()
         print("Active players: %d" % metrics["active_players"])
         print("Peak players: %d" % metrics["peak_active_players"])
         print("Pooled players: %d" % metrics["pooled_players"])
 
 # Print full performance report
 func print_audio_report() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         audio.print_performance_report()
 
 # Get pool statistics
 func check_pool_stats() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
-        var stats = audio.get_pool_stats()
+        var stats: Dictionary = audio.get_pool_stats()
         print("Pooled players: %d" % stats["pooled"])
         print("Active players: %d" % stats["active"])
         print("Total tracked players: %d" % stats["total"])
 
 # Get system health
 func check_system_health() -> void:
-    var audio = XedatsSingleton.instance()
+    var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
-        var health = audio.get_system_health()
+        var health: Dictionary = audio.get_system_health()
         print("Capacity usage: %.1f%%" % health["capacity_usage_percent"])
         print("System status: %s" % health["status"])
 ```
@@ -776,13 +778,13 @@ func _process(delta: float) -> void:
     update_position()
 
 func handle_movement(delta: float) -> void:
-    var input_dir = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+    var input_dir: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     is_sprinting = Input.is_action_pressed("ui_accept")
     is_walking = input_dir.length() > 0.0
     
     # Update velocity based on input
     if is_walking:
-        var speed = 15.0 if is_sprinting else 7.0
+        var speed: float = 15.0 if is_sprinting else 7.0
         velocity = Vector3(input_dir.x, velocity.y, input_dir.y) * speed
         
         # Play footsteps
@@ -794,11 +796,11 @@ func play_footstep() -> void:
     if not audio_system:
         return
     
-    var container = footstep_containers.get(terrain_type)
+    var container: AudioArrayContainer = footstep_containers.get(terrain_type) as AudioArrayContainer
     if not container:
         return
     
-    var player = audio_system.create_player_3d(global_position)
+    var player: XedatsPlayer3D = audio_system.create_player_3d(global_position)
     player.audio_category = "SFX"
     player.play_random_from_container(container)
     

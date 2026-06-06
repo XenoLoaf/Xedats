@@ -366,11 +366,11 @@ func _auto_bind_portal_source() -> void:
 	if path_string.is_empty():
 		return
 
-	var node_path := NodePath(path_string)
+	var node_path: NodePath = NodePath(path_string)
 	var source: Node = null
 
 	# 1. Relative to parent (covers "." → the door node itself, "../Sibling", etc.)
-	var parent := get_parent()
+	var parent: Node = get_parent()
 	if parent != null:
 		source = parent.get_node_or_null(node_path)
 
