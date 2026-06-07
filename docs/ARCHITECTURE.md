@@ -19,11 +19,11 @@ Design overview and subsystem reference for agents and contributors.
 
 ## 1. System Overview
 
-Xedats is a self-contained 3D audio runtime for Godot 4. It is accessed through a single lazy singleton entry point (`XedatsSingleton`) and requires no autoload configuration. The system is organized into three layers:
+Xedats is a self-contained 3D and 2D audio runtime for Godot 4. It is accessed through a single lazy singleton entry point (`XedatsSingleton`) and requires no autoload configuration. The system is organized into three layers:
 
 | Layer | Contents | Notes |
 |-------|----------|-------|
-| **Singleton / Nodes** | `XedatsSingleton`, `XedatsPlayer3D`, `XedatsListener3D` | Runtime entry points and managed scene nodes |
+| **Singleton / Nodes** | `XedatsSingleton`, `XedatsPlayer3D`, `XedatsListener3D`, `XedatsPlayer2D`, `XedatsListener2D` | Runtime entry points and managed scene nodes |
 | **Base Script Subsystems** | `AudioEventSystem`, `AudioStateManager`, `AudioCrossfade` | Stateful services owned and exposed by the singleton |
 | **Resources** | `AudioArrayContainer`, `EffectChain`, GLTF profiles | Data containers used by the subsystems |
 
@@ -63,7 +63,7 @@ XedatsSingleton.instance()
 ### XedatsSingleton (`Nodes/XedatsSingleton.gd`)
 
 The primary runtime API. Responsibilities:
-- **Player pool** — creates, tracks, and releases `XedatsPlayer3D` instances. `create_player_3d()` allocates from pool; `release_player()` returns to pool.
+- **Player pool** — creates, tracks, and releases `XedatsPlayer3D` and `XedatsPlayer2D` instances. `create_player_3d()` / `create_player_2d()` allocates from pool; `release_player()` returns to pool.
 - **Bus routing** — `resolve_bus_name()`, `route_player_to_category()`, `swap_player_bus()`, `apply_effect_chain_to_bus()`.
 - **Subsystem access** — exposes `AudioEventSystem`, `AudioStateManager`, `AudioCrossfade` through typed properties.
 - **Performance monitoring** — optional `perf_timer` tracks active player count and pool utilization; gated behind `enable_performance_monitoring`.
@@ -83,6 +83,20 @@ A managed `AudioStreamPlayer3D` subclass. Responsibilities:
 ### XedatsListener3D (`Nodes/XedatsListener3D.gd`)
 
 A thin wrapper around Godot's audio listener system. Registered with `XedatsSingleton` so the singleton knows the current listener position for occlusion and distance queries.
+
+### XedatsPlayer2D (`Nodes/XedatsPlayer2D.gd`)
+
+A managed `AudioStreamPlayer2D` subclass, parallel to `XedatsPlayer3D`. Responsibilities:
+- Pooled lifecycle (`_claim()` / `_release()`).
+- Named category assignment for bus routing.
+- `fade_in()` / `fade_out()` crossfade helpers.
+- `play_random_from_container()` for `AudioArrayContainer`-backed variation.
+- **No 3D-only features** — doppler, occlusion, velocity, and per-frame `_process` are omitted.
+- `set_occluded()` / `is_occluded()` are provided as external hooks for manual occlusion systems.
+
+### XedatsListener2D (`Nodes/XedatsListener2D.gd`)
+
+A thin wrapper around `AudioListener2D`, parallel to `XedatsListener3D`. Registered with `XedatsSingleton` so the singleton knows the current listener for 2D spatial queries. Supports `Area2D` reverb zones via `_on_reverb_zone_body_entered` / `_on_reverb_zone_body_exited`.
 
 ---
 
@@ -109,9 +123,9 @@ Audio settings persistence. Responsibilities:
 
 Crossfade orchestration between two audio sources. Responsibilities:
 - `fade_out_player(player)` / `fade_in_player(player)` — drive volume over time.
-- Operates on `XedatsPlayer3D` instances that are already added to the scene tree.
+- Operates on any node with a `set_volume_linear_normalized()` method (duck-typed `Node`, checked at runtime) — supports both `XedatsPlayer3D` and `XedatsPlayer2D`.
 
-> **Known issue (BACKLOG #14):** `fade_out_player()` / `fade_in_player()` currently create orphaned dummy `XedatsPlayer3D` nodes without `add_child()`. Planned refactor to use `XedatsPlayer3D.fade_out()` / `fade_in()` directly.
+> **Known issue (BACKLOG #14):** `fade_out_player()` / `fade_in_player()` currently create orphaned dummy nodes without `add_child()`. Planned refactor to use `XedatsPlayer3D.fade_out()` / `XedatsPlayer2D.fade_out()` directly.
 
 ---
 
@@ -205,7 +219,7 @@ An optional, standalone runtime node that registers Xedats-specific commands int
 | **Zero external dependencies** | Both `Xedats` and `XedatsConsoleModule` must drop into any Godot project without requiring `AutoloadManager`, `Xebug`, or any other package. |
 | **No autoload configuration required** | The lazy singleton pattern means users do not need to touch `project.godot` to use Xedats. |
 | **Null-safe singleton access** | Consumers must always null-check `XedatsSingleton.instance()`. This allows Xedats to be absent in test or stripped builds without crashing consuming code. |
-| **Pool ownership** | Players created via `create_player_3d()` are owned by the pool. Consumers must call `release_player()` when done; they must not call `queue_free()` directly on pooled players. |
+| **Pool ownership** | Players created via `create_player_3d()` or `create_player_2d()` are owned by the pool. Consumers must call `release_player()` when done; they must not call `queue_free()` directly on pooled players. |
 | **Debug prints gated** | All `print()` diagnostics in runtime scripts must be gated behind `XedatsSingleton.enable_debug_logging`. Never add unconditional prints. |
 | **GLTF module is editor-only** | The GLTF extension runs in the import pipeline only. It must not add runtime overhead or break scenes when the plugin is disabled. |
 | **Tests folder is omit-safe** | No runtime script references paths inside `packages/Xedats/Tests/`. Users may safely delete the tests folder from shipped builds. |

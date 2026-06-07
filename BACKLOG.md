@@ -1,6 +1,6 @@
 # Xedats — Backlog
 
-_Last updated: 2026-05-22_
+_Last updated: 2026-06-06_
 
 ---
 
@@ -50,7 +50,7 @@ _Last updated: 2026-05-22_
 | Item | State |
 |------|-------|
 | Canonical source | `j:\Godot_Projects\Xedats\Packages\Xedats\` |
-| Last synced to this repo | 2026-05-20 (Phase 8 — Phases 4–7 sync) |
+| Last synced to this repo | 2026-06-06 (2D audio Phases 1–8 — created in repo directly) |
 | Parity check | Manual — compare files against canonical source before each release |
 | AutoloadManager-coupled version | `j:\Godot_Projects\Xedats\DevProject\Xedats\` |
 
@@ -84,3 +84,4 @@ The **XenoLoaf Tool Suite** (a pre-wired bundle of Xedats + Xebug + AutoloadMana
 | 14 | Phase 6 docs audit — Type annotation pass: all code examples in `Getting_Started.md` and `Xedats.md` updated to explicit type style | 2026-05-21 |
 | 15 | Phase 7 GLTF review — `@tool` guard audit complete: no changes needed (import-pipeline methods are editor-only by design) | 2026-05-22 |
 | 16 | Phase 7 GLTF review — Type annotation pass: 9 for-loop variable declarations in `xedats_gltf_document_extension.gd` | 2026-05-22 |
+| 17 | **2D audio implementation (Phases 1–8):** XedatsPlayer2D.gd, XedatsListener2D.gd, singleton 2D pool, duck-typed crossfade, event `is_3d` flag, console module 2D inspection, ARCHITECTURE.md / Xedats.md / Getting_Started.md docs | 2026-06-06 |

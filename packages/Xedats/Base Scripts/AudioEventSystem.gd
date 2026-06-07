@@ -154,7 +154,7 @@ signal event_unregistered(event_name: String)
 
 ## @signal event_triggered(event_name, player)
 ## Emitted when an event successfully spawns and plays a player.
-signal event_triggered(event_name: String, player: XedatsPlayer3D)
+signal event_triggered(event_name: String, player: Node)
 
 ## @signal event_creation_failed(event_name, reason)
 ## Emitted when event playback cannot be created.
@@ -175,7 +175,7 @@ func _ready() -> void:
 ## @return bool True if registration succeeds.
 func register_event(event_name: String, audio_container: AudioArrayContainer,
 					default_volume: float = 1.0, default_pitch: float = 1.0,
-					audio_category: String = "SFX") -> bool:
+					audio_category: String = "SFX", is_3d: bool = true) -> bool:
 	if not audio_container:
 		push_error("Xedats: Cannot register event '%s' with null audio container" % event_name)
 		return false
@@ -187,6 +187,7 @@ func register_event(event_name: String, audio_container: AudioArrayContainer,
 	event.default_volume = clamp(default_volume, 0.0, 1.0)
 	event.default_pitch = clamp(default_pitch, 0.5, 2.0)
 	event.audio_category = audio_category
+	event.is_3d = is_3d
 	
 	_audio_events[event_name] = event
 	event_registered.emit(event_name)
@@ -217,80 +218,74 @@ func get_event(event_name: String) -> AudioEvent:
 func get_all_events() -> Array[String]:
 	return _audio_events.keys()
 
-## Triggers an event and returns the created player.
+## Triggers an event and returns the created player (2D or 3D).
 ## @param event_name Event identifier.
 ## @param position World position for playback.
 ## @param volume_override Optional volume override (<0 uses default).
 ## @param pitch_override Optional pitch override (<0 uses default).
-## @return XedatsPlayer3D Created player or null on failure.
+## @return Node Created player (XedatsPlayer3D or XedatsPlayer2D) or null.
 func trigger_event(event_name: String,
 				  position: Vector3 = Vector3.ZERO,
 				  volume_override: float = -1.0,
-				  pitch_override: float = -1.0) -> XedatsPlayer3D:
+				  pitch_override: float = -1.0) -> Node:
 	var event: AudioEvent = _audio_events.get(event_name)
 	if not event:
 		event_creation_failed.emit(event_name, "Event not registered")
 		push_error("Xedats: Event '%s' not registered" % event_name)
 		return null
-	
-	# Check max playback count
+
 	if event.max_playback_count > 0 and event.current_playback_count >= event.max_playback_count:
 		event_creation_failed.emit(event_name, "Max playback count reached")
 		return null
-	
+
 	if not event.audio_container:
 		event_creation_failed.emit(event_name, "No audio container")
 		return null
-	
-	# Create player
+
 	var xedats: XedatsSingleton = XedatsSingleton.instance()
 	if not xedats:
 		push_error("Xedats: XedatsSingleton not available")
 		return null
-	var player: XedatsPlayer3D
+
+	var player: Node
 	if event.is_3d:
-		player = xedats.create_player_3d(position)
+		player = xedats.create_player_3d(position) as Node
 	else:
-		player = xedats.get_player_from_pool()
-	
+		var pos_2d: Vector2 = Vector2(position.x, position.y)
+		player = xedats.create_player_2d(pos_2d) as Node
+
 	if not player:
 		event_creation_failed.emit(event_name, "Failed to create player")
 		return null
-	
-	# Apply event settings
+
 	player.audio_category = event.audio_category
-	
-	# Apply volume
+
 	var final_volume: float = volume_override if volume_override >= 0 else event.default_volume
 	final_volume *= event.audio_container.get_random_volume()
 	player.volume_db = linear_to_db(clamp(final_volume, 0.0, 1.0))
-	
-	# Apply pitch
+
 	var final_pitch: float = pitch_override if pitch_override >= 0 else event.default_pitch
 	final_pitch *= event.audio_container.get_random_pitch()
 	player.pitch_scale = clamp(final_pitch, 0.5, 2.0)
-	
-	# Play audio
+
 	player.play_random_from_container(event.audio_container)
-	
-	# Track playback
+
 	event.current_playback_count += 1
 	_record_playback(event_name)
-	
-	# Connect finished signal to decrement count (one-shot prevents accumulation on pooled players)
-	player.audio_finished_custom.connect(func(_p: XedatsPlayer3D):
+
+	player.audio_finished_custom.connect(func(_p: Node):
 		event.current_playback_count = max(0, event.current_playback_count - 1)
 	, CONNECT_ONE_SHOT)
-	
+
 	event_triggered.emit(event_name, player)
-	
+
 	return player
 
 ## Triggers an event using a params dictionary interface.
 ## @param event_name Event identifier.
 ## @param params Dictionary with optional keys: position, volume, pitch.
-## @return XedatsPlayer3D Created player or null on failure.
-func trigger_event_with_params(event_name: String, params: Dictionary) -> XedatsPlayer3D:
+## @return Node Created player (XedatsPlayer3D or XedatsPlayer2D) or null.
+func trigger_event_with_params(event_name: String, params: Dictionary) -> Node:
 	var position: Vector3 = params.get("position", Vector3.ZERO)
 	var volume: float = params.get("volume", -1.0)
 	var pitch: float = params.get("pitch", -1.0)

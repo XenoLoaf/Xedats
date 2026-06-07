@@ -69,11 +69,11 @@ static func instance() -> AudioCrossfade:
 
 class CrossfadeInfo:
 	## @var source_player
-	## Player being faded out.
-	var source_player: XedatsPlayer3D
+	## Player being faded out (XedatsPlayer3D or XedatsPlayer2D).
+	var source_player: Node
 	## @var target_player
-	## Player being faded in.
-	var target_player: XedatsPlayer3D
+	## Player being faded in (XedatsPlayer3D or XedatsPlayer2D).
+	var target_player: Node
 	## @var duration
 	## Total fade duration in seconds.
 	var duration: float
@@ -170,16 +170,20 @@ func _update_crossfade(crossfade: CrossfadeInfo, delta: float) -> bool:
 	
 	return true # Keep in active list
 
-## Starts a crossfade between source and target players.
+## Starts a crossfade between source and target players (2D and 3D compatible).
 ## @param source Player to fade out.
 ## @param target Player to fade in.
 ## @param duration Fade duration in seconds.
 ## @param curve Optional custom blending curve.
 ## @return CrossfadeInfo Created crossfade object, or null on failure.
-func start_crossfade(source: XedatsPlayer3D, target: XedatsPlayer3D,
+func start_crossfade(source: Node, target: Node,
 					 duration: float = 1.0, curve: Curve = null) -> CrossfadeInfo:
 	if not source or not target:
 		push_error("Xedats: Cannot crossfade with null players")
+		return null
+
+	if not source.has_method("set_volume_linear_normalized") or not target.has_method("set_volume_linear_normalized"):
+		push_error("Xedats: Crossfade players must support set_volume_linear_normalized()")
 		return null
 	
 	if duration <= 0:
@@ -205,18 +209,22 @@ func start_crossfade(source: XedatsPlayer3D, target: XedatsPlayer3D,
 	
 	return crossfade
 
-## Fades out one player by crossfading into a silent temporary player.
+## Fades out one player by crossfading into a silent temporary player (2D and 3D compatible).
 ## @param player Player to fade out.
 ## @param duration Fade duration in seconds.
 ## @param curve Optional custom blending curve.
 ## @return CrossfadeInfo Created crossfade object, or null on failure.
-func fade_out_player(player: XedatsPlayer3D, duration: float = 1.0, curve: Curve = null) -> CrossfadeInfo:
+func fade_out_player(player: Node, duration: float = 1.0, curve: Curve = null) -> CrossfadeInfo:
 	if not player:
 		push_error("Xedats: Cannot fade out null player")
 		return null
+
+	if not player.has_method("set_volume_linear_normalized"):
+		push_error("Xedats: Fade-out player must support set_volume_linear_normalized()")
+		return null
 	
 	# Create a dummy silent player
-	var silent_player: XedatsPlayer3D = XedatsPlayer3D.new()
+	var silent_player: Node = XedatsPlayer3D.new()
 	silent_player.volume_db = linear_to_db(0.0)
 	
 	# Start the crossfade
@@ -224,20 +232,24 @@ func fade_out_player(player: XedatsPlayer3D, duration: float = 1.0, curve: Curve
 	
 	return crossfade
 
-## Fades in one player by crossfading from a silent temporary player.
+## Fades in one player by crossfading from a silent temporary player (2D and 3D compatible).
 ## @param player Player to fade in.
 ## @param duration Fade duration in seconds.
 ## @param target_volume Target linear volume at end of fade.
 ## @param curve Optional custom blending curve.
 ## @return CrossfadeInfo Created crossfade object, or null on failure.
-func fade_in_player(player: XedatsPlayer3D, duration: float = 1.0,
+func fade_in_player(player: Node, duration: float = 1.0,
 					target_volume: float = 1.0, curve: Curve = null) -> CrossfadeInfo:
 	if not player:
 		push_error("Xedats: Cannot fade in null player")
 		return null
+
+	if not player.has_method("set_volume_linear_normalized"):
+		push_error("Xedats: Fade-in player must support set_volume_linear_normalized()")
+		return null
 	
 	# Create a dummy silent player as source
-	var silent_player: XedatsPlayer3D = XedatsPlayer3D.new()
+	var silent_player: Node = XedatsPlayer3D.new()
 	silent_player.volume_db = linear_to_db(0.0)
 	
 	# Start with player at target volume

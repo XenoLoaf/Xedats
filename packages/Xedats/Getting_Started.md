@@ -70,6 +70,28 @@ func _play_footstep(pos: Vector3) -> void:
 `play_audio_at_position` pulls a player from the internal pool, configures it, plays it,
 then returns it automatically — no manual cleanup required.
 
+### Playing a 2D Sound (UI / Non-Positional)
+
+For UI feedback, menus, and non-spatial audio, use the 2D variants:
+
+```gdscript
+func _play_ui_click() -> void:
+    var audio: XedatsSingleton = XedatsSingleton.instance()
+    if not audio:
+        return
+    audio.play_audio_at_position_2d(click_stream, Vector2.ZERO, 0.5, "SFX")
+
+# Or with AudioArrayContainer
+func _play_ui_hover() -> void:
+    var audio: XedatsSingleton = XedatsSingleton.instance()
+    if not audio:
+        return
+    audio.play_audio_container_at_position_2d(hover_container, Vector2.ZERO, "SFX")
+```
+
+2D players ignore spatial position and do not attenuate with distance — ideal for
+interface events that should sound the same regardless of camera location.
+
 ---
 
 ## 4. Attaching Audio to a Game Object
@@ -116,6 +138,8 @@ func _play_sfx(stream: AudioStream) -> void:
     player.volume_db = linear_to_db(sfx_volume)
     player.play()
 ```
+
+> **For 2D objects** (UI panels, CanvasLayer items), use `audio.create_player_2d(Vector2.ZERO)` instead of `audio.create_player_3d(global_position)`. The same pool, bus routing, and crossfade system applies to both dimensions.
 
 **Why a helper function?**
 Consolidating playback into `_play_sfx` means you only write the null-check and category
@@ -189,9 +213,13 @@ func _register_audio_events() -> void:
     if not aes:
         return
 
+    # 3D events (default) — play at world position
     aes.register_event("door_open",  preload("res://Sound/door_open.ogg"),  0.8, 1.0, "SFX")
     aes.register_event("door_close", preload("res://Sound/door_close.ogg"), 0.8, 1.0, "SFX")
-    aes.register_event("ui_click",   preload("res://Sound/ui_click.ogg"),   0.5, 1.0, "SFX")
+
+    # 2D events (is_3d = false) — UI / non-positional
+    aes.register_event("ui_click",   preload("res://Sound/ui_click.ogg"),   0.5, 1.0, "SFX", false)
+    aes.register_event("ui_hover",   preload("res://Sound/ui_hover.ogg"),   0.3, 1.0, "SFX", false)
 ```
 
 ### 6b. Triggering events
@@ -351,10 +379,11 @@ Exporting streams lets designers swap clips in the Inspector without touching co
 ### Group audio exports under `@export_group("Audio")`
 Keeps the Inspector tidy and makes audio properties easy to find alongside other object config.
 
-### Prefer `create_player_3d` over holding a persistent player reference
+### Prefer `create_player_3d` / `create_player_2d` over holding a persistent player reference
 Pool-managed players are released automatically after playback. Holding a long-lived
 reference can prevent pool recycling. For looping ambient sounds that you need to stop
 manually, holding the reference is correct — just release it in `_exit_tree`.
+Use `create_player_3d(Vector3)` for world sounds, `create_player_2d(Vector2)` for UI sounds.
 
 ### Set category before calling `play()`
 `audio_category` must be assigned before `play()` is called. The bus routing is resolved
@@ -488,7 +517,7 @@ func _play_door(stream: AudioStream) -> void:
     if not audio or stream == null:
         return
 
-    var player: XedatsPlayer3D = audio.create_player_3d(global_position)
+    var player = audio.create_player_3d(global_position)
     player.stream = stream
 
     # Base lane: SFX
@@ -502,16 +531,16 @@ Use `use_effect_bus = true` when you want the category's effect lane (for exampl
 ### 12b. Hot-swap an active player to a different bus
 
 ```gdscript
-func _promote_to_effect_lane(player: XedatsPlayer3D) -> void:
+func _promote_to_effect_lane(player: Node) -> void:
     var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio or not is_instance_valid(player):
         return
 
-    # Route to the category effect lane.
+    # Route to the category effect lane. Accepts both 3D and 2D players.
     audio.route_player_to_category(player, player.audio_category, true)
 
 
-func _route_to_custom_bus(player: XedatsPlayer3D) -> void:
+func _route_to_custom_bus(player: Node) -> void:
     var audio: XedatsSingleton = XedatsSingleton.instance()
     if not audio or not is_instance_valid(player):
         return

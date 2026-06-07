@@ -128,6 +128,7 @@ func _cmd_audio_list_buses(_args: PackedStringArray) -> Dictionary:
 	bus_names.sort()
 
 	var routes: Array[Dictionary] = xedats.get_active_player_bus_routes()
+	var routes_2d: Array[Dictionary] = xedats.get_active_player_bus_routes_2d()
 	var lines: PackedStringArray = PackedStringArray()
 	for bus_name: String in bus_names:
 		var entry_variant: Variant = bus_info.get(bus_name, {})
@@ -143,10 +144,11 @@ func _cmd_audio_list_buses(_args: PackedStringArray) -> Dictionary:
 	return {
 		"ok": true,
 		"command": "audio",
-		"message": "Audio buses: %d | Active players: %d" % [bus_names.size(), routes.size()],
+		"message": "Audio buses: %d | Active 3D: %d | Active 2D: %d" % [bus_names.size(), routes.size(), routes_2d.size()],
 		"subcommand": "list_buses",
 		"buses": bus_info,
 		"active_routes": routes,
+		"active_routes_2d": routes_2d,
 		"lines": lines
 	}
 
@@ -217,11 +219,14 @@ func _cmd_audio_inspect_player(args: PackedStringArray) -> Dictionary:
 		return _error_result("audio", "XedatsSingleton is unavailable.")
 
 	var routes: Array[Dictionary] = xedats.get_active_player_bus_routes()
+	var routes_2d: Array[Dictionary] = xedats.get_active_player_bus_routes_2d()
 	var resolved: Dictionary = _resolve_player_from_identifier(String(args[0]), routes)
+	if not bool(resolved.get("ok", false)):
+		resolved = _resolve_player_from_identifier(String(args[0]), routes_2d)
 	if not bool(resolved.get("ok", false)):
 		return _error_result("audio", String(resolved.get("message", "Player not found.")))
 
-	var player: XedatsPlayer3D = resolved.get("player") as XedatsPlayer3D
+	var player: Node = resolved.get("player") as Node
 	if player == null:
 		return _error_result("audio", "Resolved player is invalid.")
 
@@ -234,6 +239,7 @@ func _cmd_audio_inspect_player(args: PackedStringArray) -> Dictionary:
 		"player": {
 			"name": String(player.name),
 			"path": String(player.get_path()) if player.is_inside_tree() else "",
+			"player_type": String(route.get("player_type", "3D")),
 			"category": String(player.audio_category),
 			"bus": String(player.bus),
 			"playing": player.playing,
@@ -256,11 +262,14 @@ func _cmd_audio_route_test(args: PackedStringArray) -> Dictionary:
 		return _error_result("audio", "XedatsSingleton is unavailable.")
 
 	var routes: Array[Dictionary] = xedats.get_active_player_bus_routes()
+	var routes_2d: Array[Dictionary] = xedats.get_active_player_bus_routes_2d()
 	var resolved: Dictionary = _resolve_player_from_identifier(String(args[0]), routes)
+	if not bool(resolved.get("ok", false)):
+		resolved = _resolve_player_from_identifier(String(args[0]), routes_2d)
 	if not bool(resolved.get("ok", false)):
 		return _error_result("audio", String(resolved.get("message", "Player not found.")))
 
-	var player: XedatsPlayer3D = resolved.get("player") as XedatsPlayer3D
+	var player: Node = resolved.get("player") as Node
 	if player == null:
 		return _error_result("audio", "Resolved player is invalid.")
 
@@ -298,7 +307,7 @@ func _resolve_player_from_identifier(identifier: String, routes: Array[Dictionar
 		var indexed_route_variant: Variant = routes[index]
 		if indexed_route_variant is Dictionary:
 			var indexed_route: Dictionary = indexed_route_variant
-			var indexed_player: XedatsPlayer3D = _resolve_player_from_route(indexed_route)
+			var indexed_player: Node = _resolve_player_from_route(indexed_route)
 			if indexed_player != null:
 				return {
 					"ok": true,
@@ -313,7 +322,7 @@ func _resolve_player_from_identifier(identifier: String, routes: Array[Dictionar
 			continue
 		var route: Dictionary = route_variant
 		if String(route.get("player_path", "")) == trimmed:
-			var path_player: XedatsPlayer3D = _resolve_player_from_route(route)
+			var path_player: Node = _resolve_player_from_route(route)
 			if path_player != null:
 				return {
 					"ok": true,
@@ -328,7 +337,7 @@ func _resolve_player_from_identifier(identifier: String, routes: Array[Dictionar
 			continue
 		var route: Dictionary = route_variant
 		if String(route.get("player_name", "")) == trimmed:
-			var named_player: XedatsPlayer3D = _resolve_player_from_route(route)
+			var named_player: Node = _resolve_player_from_route(route)
 			if named_player != null:
 				return {
 					"ok": true,
@@ -343,7 +352,7 @@ func _resolve_player_from_identifier(identifier: String, routes: Array[Dictionar
 	}
 
 
-func _resolve_player_from_route(route: Dictionary) -> XedatsPlayer3D:
+func _resolve_player_from_route(route: Dictionary) -> Node:
 	var player_path: String = String(route.get("player_path", ""))
 	if player_path.is_empty():
 		return null
@@ -351,8 +360,8 @@ func _resolve_player_from_route(route: Dictionary) -> XedatsPlayer3D:
 	if scene_tree == null or scene_tree.root == null:
 		return null
 	var node: Node = scene_tree.root.get_node_or_null(NodePath(player_path))
-	if node is XedatsPlayer3D and is_instance_valid(node):
-		return node as XedatsPlayer3D
+	if (node is XedatsPlayer3D or node is XedatsPlayer2D) and is_instance_valid(node):
+		return node
 	return null
 
 

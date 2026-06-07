@@ -8,9 +8,10 @@
 
 ## Overview
 
-**Xedats** is a comprehensive 3D audio system for Godot 4.6+. It provides:
+**Xedats** is a comprehensive 3D and 2D audio system for Godot 4.7+. It provides:
 - **Efficient audio playback** via object pooling
 - **Spatial 3D audio** with doppler effects and occlusion
+- **2D audio** for UI, menus, and non-positional playback
 - **Audio event system** for named audio triggers
 - **Volume categorization** (Master, SFX, Music, VoiceLines, Ambient)
 - **Category/effect-lane bus routing** with hot-swap helpers
@@ -116,6 +117,19 @@ if audio:
     player.stream = stream
     player.play()
 ```
+
+### 3. Play a 2D Sound (UI / Non-Positional)
+
+```gdscript
+var stream: AudioStream = preload("res://path/to/ui_click.ogg")
+var audio: XedatsSingleton = XedatsSingleton.instance()
+if audio:
+    var player: XedatsPlayer2D = audio.create_player_2d(Vector2.ZERO)
+    player.stream = stream
+    player.play()
+```
+
+2D players ignore spatial position and are ideal for UI feedback, menu sounds, and any audio that should not attenuate with distance. The same pool management, bus routing, and crossfade system applies to both 3D and 2D players.
 
 ---
 
@@ -457,6 +471,59 @@ func stop_ambient() -> void:
 
 ---
 
+## 2D Audio
+
+Xedats provides full 2D audio support parallel to its 3D system. 2D players (`XedatsPlayer2D`) and listeners (`XedatsListener2D`) use the same object pooling, bus routing, crossfading, and event system as their 3D counterparts.
+
+### Creating 2D Players
+
+```gdscript
+var audio: XedatsSingleton = XedatsSingleton.instance()
+if audio:
+    var player: XedatsPlayer2D = audio.create_player_2d(Vector2.ZERO)
+    player.stream = my_stream
+    player.audio_category = "SFX"
+    player.play()
+```
+
+### 2D Convenience Playback
+
+```gdscript
+# One-shot play (auto-returns to pool)
+audio.play_audio_at_position_2d(stream, Vector2(100, 200), 0.8, "SFX")
+
+# Play from AudioArrayContainer
+audio.play_audio_container_at_position_2d(container, Vector2(100, 200), "SFX")
+```
+
+### 2D Listeners
+
+```gdscript
+# Create a 2D listener (e.g., on UI root or CanvasLayer)
+var listener: XedatsListener2D = audio.create_listener_2d()
+audio.set_current_listener_2d(listener)
+
+# 2D listeners support Area2D reverb zones
+```
+
+### Key Differences from 3D
+
+| Feature | 3D (`XedatsPlayer3D`) | 2D (`XedatsPlayer2D`) |
+|---------|----------------------|----------------------|
+| Base class | `AudioStreamPlayer3D` | `AudioStreamPlayer2D` |
+| Position type | `Vector3` | `Vector2` |
+| Doppler | Yes | N/A |
+| Occlusion (built-in) | Yes | No (external hook only) |
+| Velocity tracking | Yes | No |
+| Per-frame `_process` | Yes | No |
+| Pool | `_player_3d_pool` | `_player_2d_pool` |
+
+### Inspection (Console Module)
+
+When using the optional `XedatsConsoleModule`, the `audio inspect_player` and `audio route_test` commands search both 3D and 2D active routes.  `audio list_buses` shows active player counts for both dimensions side-by-side.
+
+---
+
 ## Audio Events System
 
 For more complex audio scenarios, use the **Audio Event System** for centralized audio management:
@@ -472,7 +539,7 @@ func setup_audio_events() -> void:
     
     var event_system: AudioEventSystem = audio.get_event_system()
     
-    # Register player events
+    # Register player events (3D — default)
     event_system.register_event(
         "player_footstep_grass",
         preload("res://audio/footsteps/grass.tres"),
@@ -503,6 +570,25 @@ func setup_audio_events() -> void:
         0.8,
         1.0,
         "Music"
+    )
+
+    # Register 2D UI events (non-positional)
+    event_system.register_event(
+        "ui_click",
+        preload("res://audio/ui/click.ogg"),
+        0.5,
+        1.0,
+        "SFX",
+        false  # is_3d = false → uses 2D player pool
+    )
+
+    event_system.register_event(
+        "ui_hover",
+        preload("res://audio/ui/hover.ogg"),
+        0.3,
+        1.0,
+        "SFX",
+        false  # is_3d = false → uses 2D player pool
     )
 ```
 
@@ -611,22 +697,22 @@ var random_pitch: float = footstep_container.get_random_pitch()    # Based on pi
 Smoothly transition between sounds:
 
 ```gdscript
-# Fade between two players
-func crossfade_music(from_player: XedatsPlayer3D, to_player: XedatsPlayer3D) -> void:
+# Fade between two players (3D or 2D — both accepted)
+func crossfade_music(from_player: Node, to_player: Node) -> void:
     var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         var crossfade: AudioCrossfade = audio.get_crossfade_system()
         crossfade.start_crossfade(from_player, to_player, 2.0)  # 2 second fade
 
 # Fade out a single player
-func fade_out_music(player: XedatsPlayer3D) -> void:
+func fade_out_music(player: Node) -> void:
     var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         var crossfade: AudioCrossfade = audio.get_crossfade_system()
         crossfade.fade_out_player(player, 2.0)
 
 # Fade in a single player
-func fade_in_music(player: XedatsPlayer3D, target_volume: float = 1.0) -> void:
+func fade_in_music(player: Node, target_volume: float = 1.0) -> void:
     var audio: XedatsSingleton = XedatsSingleton.instance()
     if audio:
         var crossfade: AudioCrossfade = audio.get_crossfade_system()
@@ -738,9 +824,10 @@ func check_system_health() -> void:
 - Use normalized volume (0.0-1.0) via `set_volume_linear_normalized()`
 
 ### 5. **Listener Management**
-- Create a listener on the player character
+- Create a listener on the player character (3D for world audio, 2D for UI)
 - Keep listener position synchronized with camera/player
-- Use `set_current_listener()` to manage audio perspective
+- Use `set_current_listener()` / `set_current_listener_2d()` to manage audio perspective
+- 2D listeners support `Area2D` reverb zones for localized effects
 
 ### 6. **Event System**
 - Register events during level/scene setup
