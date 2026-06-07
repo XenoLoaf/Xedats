@@ -104,14 +104,14 @@ A thin wrapper around `AudioListener2D`, parallel to `XedatsListener3D`. Registe
 
 All subsystems are instantiated and held by `XedatsSingleton`. They are not singletons themselves; access them through the singleton.
 
-### AudioEventSystem (`Base Scripts/AudioEventSystem.gd`)
+### AudioEventSystem (`Core/AudioEventSystem.gd`)
 
 Named audio trigger dispatch. Responsibilities:
 - Register named events (`register_event(event_name, stream_or_container)`).
 - Trigger events (`trigger_event(event_name, at_position)`) — acquires a player from the pool, connects a one-shot completion signal, and plays.
 - Uses `CONNECT_ONE_SHOT` on completion signals to avoid signal accumulation on pooled players.
 
-### AudioStateManager (`Base Scripts/AudioStateManager.gd`)
+### AudioStateManager (`Core/AudioStateManager.gd`)
 
 Audio settings persistence. Responsibilities:
 - Save volume category levels to disk (`save_audio_state()`).
@@ -119,7 +119,7 @@ Audio settings persistence. Responsibilities:
 - Delete saved state (`delete_saved_state()`).
 - All `print()` calls in this subsystem must be gated behind `XedatsSingleton.enable_debug_logging`.
 
-### AudioCrossfade (`Base Scripts/AudioCrossfade.gd`)
+### AudioCrossfade (`Core/AudioCrossfade.gd`)
 
 Crossfade orchestration between two audio sources. Responsibilities:
 - `fade_out_player(player)` / `fade_in_player(player)` — drive volume over time.
@@ -131,17 +131,17 @@ Crossfade orchestration between two audio sources. Responsibilities:
 
 ## 5. Resource Definitions
 
-### AudioArrayContainer (`Base Scripts/ResourceDef/AudioArrayContainer.gd`)
+### AudioArrayContainer (`Core/AudioArrayContainer.gd`)
 
 A `Resource` subclass holding an array of `AudioStream` assets for randomized variation. Used by `XedatsPlayer3D.play_random_from_container()` and `AudioEventSystem`.
 
 > **Known issue (BACKLOG #15):** `_get_property_list()` emits a `push_warning()` on every editor inspection, causing noise in the output panel. The warning should be removed or guarded.
 
-### EffectChain (`Base Scripts/ResourceDef/EffectChain.gd`)
+### EffectChain (`Core/EffectChain.gd`)
 
 A `Resource` subclass defining an ordered list of `AudioEffect` assets to apply to a bus. Used by `XedatsSingleton.apply_effect_chain_to_bus()`.
 
-### GLTF Profile Resources (`Resources/GLTF/`)
+### GLTF Profile Resources (`GLTF/Profiles/`)
 
 Default `.tres` assets for GLTF module profiles:
 - `xedats_distance_band_profile_default.tres`
@@ -154,7 +154,7 @@ These are the fallback resources used when a GLTF scene does not provide its own
 
 ## 6. GLTF Module
 
-**Status: Beta.** Located at `packages/Xedats/Modules/GLTF/`.
+**Status: Beta.** Located at `packages/Xedats/GLTF/`.
 
 The GLTF module is a `GLTFDocumentExtension` that bridges glTF audio metadata into the Xedats runtime during Godot's asset import pipeline.
 
@@ -189,7 +189,7 @@ If Xedats runtime services are unavailable during import, the module logs a warn
 ### Authoring reference
 
 Full JSON structure, source URI conventions, acoustic surface tuning values, and headless test instructions are in:
-`packages/Xedats/Modules/GLTF/Setup_GLTF_Audio_Surfaces.md`
+`packages/Xedats/GLTF_Docs/Setup_GLTF_Audio_Surfaces.md`
 
 ---
 

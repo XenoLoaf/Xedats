@@ -141,13 +141,15 @@ func get_random_volume() -> float:
 func get_random_pitch() -> float:
 	return randf_range(pitch_variation.x, pitch_variation.y)
 
-## Provides custom property list and emits warning when container has no streams.
+## Provides custom property list and warns once in editor if container is empty.
 ## @return Array[Dictionary] Property list entries.
+var _warned_empty: bool = false
+
 func _get_property_list() -> Array[Dictionary]:
 	var properties: Array[Dictionary] = []
 	
-	# Add validation for stream container
-	if StreamContainer.is_empty():
+	if Engine.is_editor_hint() and StreamContainer.is_empty() and not _warned_empty:
+		_warned_empty = true
 		push_warning("AudioArrayContainer '%s' has no audio streams" % container_name)
 	
 	return properties

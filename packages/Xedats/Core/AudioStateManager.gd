@@ -239,14 +239,15 @@ func _reset_state() -> void:
 		"timestamp": 0
 	}
 
-## Validates current _audio_state structure.
+## Validates a state dictionary structure for required keys.
+## @param state Dictionary to validate (defaults to _audio_state).
 ## @return bool True when required keys are present.
-func _validate_state() -> bool:
-	if not _audio_state.has("version"):
+func _validate_state(state: Dictionary = _audio_state) -> bool:
+	if not state.has("version"):
 		return false
-	if not _audio_state.has("category_volumes"):
+	if not state.has("category_volumes"):
 		return false
-	if not _audio_state.has("master_volume"):
+	if not state.has("master_volume"):
 		return false
 	
 	return true
@@ -318,7 +319,7 @@ func import_state_from_json(json_string: String) -> bool:
 		return false
 	
 	var imported_state: Dictionary = json.data
-	if not _validate_state_structure(imported_state):
+	if not _validate_state(imported_state):
 		push_error("Xedats: Imported state has invalid structure")
 		return false
 	
@@ -329,17 +330,6 @@ func import_state_from_json(json_string: String) -> bool:
 		for category in _audio_state["category_volumes"].keys():
 			var volume: float = _audio_state["category_volumes"][category]
 			XedatsSingleton.instance().set_category_volume(category, volume)
-	
-	return true
-
-## Validates structure of a provided state dictionary.
-## @param state Dictionary to validate.
-## @return bool True when required keys are present.
-func _validate_state_structure(state: Dictionary) -> bool:
-	if not state.has("version"):
-		return false
-	if not state.has("category_volumes"):
-		return false
 	
 	return true
 

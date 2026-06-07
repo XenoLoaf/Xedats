@@ -84,6 +84,12 @@ static var _instantiation_in_progress: bool = false
 ## Test hook for simulating an unavailable runtime singleton.
 static var _instance_creation_blocked_for_tests: bool = false
 
+## Incrementing counters for unique node naming (replaces randi() to avoid collisions).
+static var _next_player_id: int = 0
+static var _next_player_2d_id: int = 0
+static var _next_listener_id: int = 0
+static var _next_listener_2d_id: int = 0
+
 ## Returns the current instance of XedatsSingleton.
 ##
 ## If the singleton hasn't been instantiated yet, it will be created lazily on first access.
@@ -315,14 +321,6 @@ func _ready() -> void:
 	timer_2d.timeout.connect(_cleanup_inactive_players_2d)
 	add_child(timer_2d)
 	
-	# Set up performance monitoring timer
-	if enable_performance_monitoring:
-		var perf_timer: Timer = Timer.new()
-		perf_timer.wait_time = 1.0 / 60.0 # Update every frame
-		perf_timer.autostart = true
-		perf_timer.timeout.connect(_update_performance_stats)
-		add_child(perf_timer)
-	
 	# Clear the instantiation flag now that subsystems are initialized.
 	_instantiation_in_progress = false
 
@@ -400,7 +398,8 @@ func return_player_to_pool(player: XedatsPlayer3D) -> void:
 ## @return XedatsPlayer3D Newly created player instance.
 func _create_player() -> XedatsPlayer3D:
 	var player: XedatsPlayer3D = XedatsPlayer3D.new()
-	player.name = "XedatsPlayer_%d" % randi()
+	player.name = "XedatsPlayer_%d" % _next_player_id
+	_next_player_id += 1
 	add_child(player)
 	return player
 
@@ -443,7 +442,8 @@ func return_player_2d_to_pool(player: XedatsPlayer2D) -> void:
 ## @return XedatsPlayer2D Newly created 2D player.
 func _create_player_2d() -> XedatsPlayer2D:
 	var player: XedatsPlayer2D = XedatsPlayer2D.new()
-	player.name = "XedatsPlayer2D_%d" % randi()
+	player.name = "XedatsPlayer2D_%d" % _next_player_2d_id
+	_next_player_2d_id += 1
 	add_child(player)
 	return player
 
@@ -507,7 +507,8 @@ func create_player_2d(position: Vector2 = Vector2.ZERO, parent: Node = null) -> 
 ## @return XedatsListener3D: A ready-to-use audio listener positioned at the specified location.
 func create_listener_3d(position: Vector3 = Vector3.ZERO, parent: Node = null) -> XedatsListener3D:
 	var listener: XedatsListener3D = XedatsListener3D.new()
-	listener.name = "XedatsListener_%d" % randi()
+	listener.name = "XedatsListener_%d" % _next_listener_id
+	_next_listener_id += 1
 	listener.global_position = position
 	
 	if parent:
@@ -561,7 +562,8 @@ func get_current_listener() -> XedatsListener3D:
 ## @return XedatsListener2D A ready-to-use 2D audio listener.
 func create_listener_2d(position: Vector2 = Vector2.ZERO, parent: Node = null) -> XedatsListener2D:
 	var listener: XedatsListener2D = XedatsListener2D.new()
-	listener.name = "XedatsListener2D_%d" % randi()
+	listener.name = "XedatsListener2D_%d" % _next_listener_2d_id
+	_next_listener_2d_id += 1
 	listener.global_position = position
 
 	if parent:
@@ -1033,6 +1035,10 @@ func _ensure_builtin_effect_buses() -> void:
 		create_audio_bus(effect_bus_name, String(BUILTIN_EFFECT_BUS_SENDS[effect_bus_name]))
 
 # ============ PERFORMANCE MONITORING ============
+
+## Called every frame. Drives performance monitoring when enabled.
+func _process(_delta: float) -> void:
+	_update_performance_stats()
 
 ## Updates rolling performance history and peak counters.
 func _update_performance_stats() -> void:

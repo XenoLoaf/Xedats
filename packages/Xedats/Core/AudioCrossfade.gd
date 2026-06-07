@@ -146,11 +146,19 @@ func _update_crossfade(crossfade: CrossfadeInfo, delta: float) -> bool:
 	crossfade.progress += delta / crossfade.duration
 	
 	if crossfade.progress >= 1.0:
-		# Crossfade complete
+		# Crossfade complete — stop source, normalize target
 		if crossfade.source_player:
 			crossfade.source_player.stop()
 		if crossfade.target_player:
 			crossfade.target_player.set_volume_linear_normalized(1.0)
+		
+		# Free orphaned silent players created by fade_out/fade_in
+		# Silent players are never added to the scene tree, so
+		# is_inside_tree() reliably distinguishes them from real pooled players.
+		if crossfade.source_player and not crossfade.source_player.is_inside_tree():
+			crossfade.source_player.queue_free()
+		if crossfade.target_player and not crossfade.target_player.is_inside_tree():
+			crossfade.target_player.queue_free()
 		
 		return false # Remove from active list
 	

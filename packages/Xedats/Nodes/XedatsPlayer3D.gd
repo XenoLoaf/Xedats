@@ -200,7 +200,7 @@ func play_random_from_container(container: AudioArrayContainer, override_stream:
 		push_error("Invalid or empty audio container")
 		return
 	
-	var random_index: int = randi() % container.StreamContainer.size()
+	var random_index: int = randi_range(0, container.StreamContainer.size() - 1)
 	play_from_container(container, random_index, override_stream)
 
 ## Sets volume using normalized linear value in range [0.0, 1.0].

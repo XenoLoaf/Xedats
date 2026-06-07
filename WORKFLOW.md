@@ -138,11 +138,11 @@ Use when working with GDExtension class bindings or verifying extension API surf
 
 ## 5. Working with the GLTF Module
 
-The GLTF module (`packages/Xedats/Modules/GLTF/`) is a `GLTFDocumentExtension` bridge and is marked **beta**. Before any GLTF task:
+The GLTF module (`packages/Xedats/GLTF/`) is a `GLTFDocumentExtension` bridge and is marked **beta**. Before any GLTF task:
 
-1. **Read the setup guide.** Open `Modules/GLTF/Setup_GLTF_Audio_Surfaces.md` for JSON structure, source URI conventions, and import pipeline details.
-2. **Check the research reference.** `Modules/GLTF/Spatial_Audio_Research_Reference.md` tracks paper-to-implementation mapping. Check it before making decisions about spatial audio behavior.
-3. **Check the implementation plan.** `Modules/GLTF/Implementation_Idea_Groups.md` tracks grouped feature tracks. Confirm any new work aligns with the planned direction.
+1. **Read the setup guide.** Open `GLTF_Docs/Setup_GLTF_Audio_Surfaces.md` for JSON structure, source URI conventions, and import pipeline details.
+2. **Check the research reference.** `GLTF_Docs/Spatial_Audio_Research_Reference.md` tracks paper-to-implementation mapping. Check it before making decisions about spatial audio behavior.
+3. **Check the implementation plan.** `GLTF_Docs/Implementation_Idea_Groups.md` tracks grouped feature tracks. Confirm any new work aligns with the planned direction.
 4. **Verify editor guards.** All code inside `GLTFDocumentExtension` lifecycle methods (`_import_preflight`, `_import_node`, etc.) runs during the import pipeline only. Do not add `Engine.is_editor_hint()` guards to these — they are already import-pipeline-scoped. Only guard code that is shared between import and runtime.
 5. **Confirm fallback behavior.** If Xedats runtime services are unavailable during import, the module must log a warning and fall back gracefully — never fail the import.
 
@@ -162,7 +162,7 @@ When completing a backlog task:
 
 ## 7. Testing
 
-The test suite lives under `packages/Xedats/Tests/GLTF/` and contains headless fixture tests for the GLTF import pipeline. It is safe to omit from shipped builds — no runtime script references paths inside `Tests/`.
+The test suite lives under `packages/Xedats/Tests_GLTF/GLTF/` and contains headless fixture tests for the GLTF import pipeline. It is safe to omit from shipped builds — no runtime script references paths inside `Tests_GLTF/`.
 
 | What to verify | How |
 |----------------|-----|

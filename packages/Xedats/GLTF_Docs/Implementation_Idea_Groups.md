@@ -144,7 +144,7 @@ Group C MVP (import-time precomputed propagation lookup) is implemented. Deliver
 - `XedatsPrecomputedPropagationResolver` static utility — resolves lookup key from `xedats_precomputed_id` or `xedats_probe_region`.
 - `xedats_gltf_document_extension.gd` — resolves authored extras into flattened payload hints and preserves warning-only fallback when assets are missing.
 - `xedats_gltf_emitter_binding.gd` — applies effective gain and player occlusion/distance-filtering overrides at `_ready`; routes through deterministic precomputed buses when optional low/high-pass or reverb hints are authored; exposes debug metadata for fixture inspection.
-- Sample assets under `Resources/GLTF/PrecomputedPropagation/` and fixture coverage for valid profile, missing asset, and probe-region fallback cases.
+- Sample assets under `GLTF/Profiles/PrecomputedPropagation/` and fixture coverage for valid profile, missing asset, and probe-region fallback cases.
 
 ---
 

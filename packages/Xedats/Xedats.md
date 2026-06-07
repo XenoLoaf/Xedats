@@ -79,22 +79,40 @@ To enable importer registration in the editor:
 If Xedats runtime services are unavailable during import, the importer logs warnings and falls back to simple playback binding instead of failing import.
 
 For full authoring guidance including JSON structure, source URI conventions, acoustic surface tuning values, and headless test instructions see:
-**[Modules/GLTF/Setup_GLTF_Audio_Surfaces.md](Modules/GLTF/Setup_GLTF_Audio_Surfaces.md)**
+**[GLTF_Docs/Setup_GLTF_Audio_Surfaces.md](GLTF_Docs/Setup_GLTF_Audio_Surfaces.md)**
 
 Spatial audio R&D notes and paper-to-implementation guidance are tracked here:
-**[Modules/GLTF/Spatial_Audio_Research_Reference.md](Modules/GLTF/Spatial_Audio_Research_Reference.md)**
+**[GLTF_Docs/Spatial_Audio_Research_Reference.md](GLTF_Docs/Spatial_Audio_Research_Reference.md)**
 
 Grouped implementation planning tracks are here:
-**[Modules/GLTF/Implementation_Idea_Groups.md](Modules/GLTF/Implementation_Idea_Groups.md)**
+**[GLTF_Docs/Implementation_Idea_Groups.md](GLTF_Docs/Implementation_Idea_Groups.md)**
 
 Latest example-project planning pass (Godot Spatial Audio Resources) is included in:
-**[Modules/GLTF/Implementation_Idea_Groups.md#example-project-pass-godot-spatial-audio-resources](Modules/GLTF/Implementation_Idea_Groups.md#example-project-pass-godot-spatial-audio-resources)**
+**[GLTF_Docs/Implementation_Idea_Groups.md#example-project-pass-godot-spatial-audio-resources](GLTF_Docs/Implementation_Idea_Groups.md#example-project-pass-godot-spatial-audio-resources)**
 
-## Runtime Tooling
+## Editor Plugin
 
-This package exposes runtime state and helper APIs that can be consumed by optional tooling layers.
+Xedats includes an optional editor plugin (`addons/xedats/`) that enhances the Inspector for distance band profile resources.
 
-Those tooling layers are intentionally outside the scope of this standalone runtime package.
+**Custom inspector for `XedatsDistanceBandProfile`:**
+
+- Visual distance band ruler with colored Near / Mid / Far segments
+- Gain and rate scale bars with numeric labels
+- Live test-distance slider to preview which band activates at a given distance
+
+**Propagation Profile Baker (dock panel):**
+
+- Profile list with create / edit / save / delete
+- Full editor form for all 14 `XedatsPrecomputedPropagationProfile` fields
+- Configurable profile directory with browse dialog
+- Saves directly to the resolver's expected path
+
+To enable:
+1. Copy the `addons/xedats/` folder into your project's `addons/` directory.
+2. Enable **Xedats Distance Band Editor** in `Project Settings → Plugins`.
+3. The Propagation Baker dock appears in the right panel (drag to reposition).
+
+The plugin is purely an editor convenience — it is not required at runtime and can be omitted in release builds.
 
 ## Quick Start
 

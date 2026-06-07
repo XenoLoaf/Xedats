@@ -562,5 +562,5 @@ or removed during development.
 ---
 
 *This document will be updated as Xedats features expand. Check `Xedats.md` for the
-full system reference and `Modules/GLTF/Setup_GLTF_Audio_Surfaces.md` for glTF-specific
+full system reference and `GLTF_Docs/Setup_GLTF_Audio_Surfaces.md` for glTF-specific
 audio authoring.*
