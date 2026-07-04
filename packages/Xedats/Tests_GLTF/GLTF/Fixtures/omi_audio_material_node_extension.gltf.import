@@ -4,18 +4,20 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ciyr1gexi36ep"
-path="res://.godot/imported/omi_audio_material_node_extension.gltf-e15e5d416a1f643d4926ec0e0a8d603e.scn"
+path="res://.godot/imported/omi_audio_material_node_extension.gltf-3275e3ad6a38830fee4b31362aeee2c2.scn"
 
 [deps]
 
-source_file="res://Xedats/Tests/GLTF/Fixtures/omi_audio_material_node_extension.gltf"
-dest_files=["res://.godot/imported/omi_audio_material_node_extension.gltf-e15e5d416a1f643d4926ec0e0a8d603e.scn"]
+source_file="res://addons/xedats/Tests_GLTF/GLTF/Fixtures/omi_audio_material_node_extension.gltf"
+dest_files=["res://.godot/imported/omi_audio_material_node_extension.gltf-3275e3ad6a38830fee4b31362aeee2c2.scn"]
 
 [params]
 
 nodes/root_type=""
 nodes/root_name=""
 nodes/root_script=null
+mesh_library/use_node_names_as_mesh_names=false
+array_mesh/deduplicate_surfaces=true
 nodes/apply_root_scale=true
 nodes/root_scale=1.0
 nodes/import_as_skeleton_bones=false
@@ -40,3 +42,4 @@ materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=1
+gltf/texture_map_mode=0

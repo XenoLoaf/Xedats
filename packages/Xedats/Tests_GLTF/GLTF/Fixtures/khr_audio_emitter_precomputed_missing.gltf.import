@@ -4,18 +4,20 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dcyj5b8swgc25"
-path="res://.godot/imported/khr_audio_emitter_precomputed_missing.gltf-6eea3ae2f7f7eb2aa5da0619a2339b3c.scn"
+path="res://.godot/imported/khr_audio_emitter_precomputed_missing.gltf-b0d5b858ce44160496edc63fde273b20.scn"
 
 [deps]
 
-source_file="res://Xedats/Tests/GLTF/Fixtures/khr_audio_emitter_precomputed_missing.gltf"
-dest_files=["res://.godot/imported/khr_audio_emitter_precomputed_missing.gltf-6eea3ae2f7f7eb2aa5da0619a2339b3c.scn"]
+source_file="res://addons/xedats/Tests_GLTF/GLTF/Fixtures/khr_audio_emitter_precomputed_missing.gltf"
+dest_files=["res://.godot/imported/khr_audio_emitter_precomputed_missing.gltf-b0d5b858ce44160496edc63fde273b20.scn"]
 
 [params]
 
 nodes/root_type=""
 nodes/root_name=""
 nodes/root_script=null
+mesh_library/use_node_names_as_mesh_names=false
+array_mesh/deduplicate_surfaces=true
 nodes/apply_root_scale=true
 nodes/root_scale=1.0
 nodes/import_as_skeleton_bones=false
@@ -40,3 +42,4 @@ materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=1
+gltf/texture_map_mode=0

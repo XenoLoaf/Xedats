@@ -4,18 +4,20 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://o6q0vwd8gyrx"
-path="res://.godot/imported/khr_audio_emitter_name_fallback.gltf-fa5b9c9b1e78a4e86b35c9eb42bc671f.scn"
+path="res://.godot/imported/khr_audio_emitter_name_fallback.gltf-72ed6ff09f20e435d82c3192ba5c7bb5.scn"
 
 [deps]
 
-source_file="res://Xedats/Tests/GLTF/Fixtures/khr_audio_emitter_name_fallback.gltf"
-dest_files=["res://.godot/imported/khr_audio_emitter_name_fallback.gltf-fa5b9c9b1e78a4e86b35c9eb42bc671f.scn"]
+source_file="res://addons/xedats/Tests_GLTF/GLTF/Fixtures/khr_audio_emitter_name_fallback.gltf"
+dest_files=["res://.godot/imported/khr_audio_emitter_name_fallback.gltf-72ed6ff09f20e435d82c3192ba5c7bb5.scn"]
 
 [params]
 
 nodes/root_type=""
 nodes/root_name=""
 nodes/root_script=null
+mesh_library/use_node_names_as_mesh_names=false
+array_mesh/deduplicate_surfaces=true
 nodes/apply_root_scale=true
 nodes/root_scale=1.0
 nodes/import_as_skeleton_bones=false
@@ -40,3 +42,4 @@ materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=1
+gltf/texture_map_mode=0

@@ -248,7 +248,7 @@ func trigger_event(event_name: String,
 		return null
 
 	var player: Node
-	if event.is_3d:
+	if event.is_3d or not ClassDB.class_exists(&"XedatsPlayer2D"):
 		player = xedats.create_player_3d(position) as Node
 	else:
 		var pos_2d: Vector2 = Vector2(position.x, position.y)

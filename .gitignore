@@ -1,6 +1,8 @@
 # Godot editor data
 .godot/
 .import/
+pipeline-kit/
+test-project/
 
 # Mono/C# build output
 .mono/
@@ -8,3 +10,6 @@
 # OS files
 Thumbs.db
 .DS_Store
+/arena
+/docs
+BACKLOG.md

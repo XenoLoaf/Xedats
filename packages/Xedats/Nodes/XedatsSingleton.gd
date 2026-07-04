@@ -144,30 +144,32 @@ var _player_pool: Array[XedatsPlayer3D] = []
 ## These players are returned to the pool when they finish playing.
 var _active_players: Array[XedatsPlayer3D] = []
 
-## @var MAX_POOL_SIZE
+## @export var max_pool_size
 ## Maximum number of players to keep in the pool.
-## Prevents excessive memory usage while maintaining performance.
-const MAX_POOL_SIZE: int = 32
+## Increase for MIDI-heavy projects where orchestration can produce 100+ concurrent notes.
+## @default 32
+@export var max_pool_size: int = 32
 
-## @var MAX_POOL_SIZE_2D
+## @export var max_pool_size_2d
 ## Maximum number of 2D players to keep in the pool.
-const MAX_POOL_SIZE_2D: int = 32
+## @default 32
+@export var max_pool_size_2d: int = 32
 
 ## @var _player_2d_pool
 ## Pool of pre-allocated XedatsPlayer2D instances for 2D audio.
-var _player_2d_pool: Array[XedatsPlayer2D] = []
+var _player_2d_pool: Array = []
 
 ## @var _active_players_2d
 ## Currently active 2D audio players.
-var _active_players_2d: Array[XedatsPlayer2D] = []
+var _active_players_2d: Array = []
 
 ## @var _active_listeners_2d
 ## Array of all registered XedatsListener2D instances.
-var _active_listeners_2d: Array[XedatsListener2D] = []
+var _active_listeners_2d: Array = []
 
 ## @var _current_listener_2d
 ## The currently active 2D audio listener.
-var _current_listener_2d: XedatsListener2D = null
+var _current_listener_2d: Node = null
 
 ## @var _active_listeners
 ## Array of all registered XedatsListener3D instances in the scene.
@@ -291,7 +293,8 @@ func _ready() -> void:
 	
 	# Initialize the audio system
 	_initialize_audio_system()
-	_initialize_audio_system_2d()
+	if ClassDB.class_exists(&"XedatsPlayer2D"):
+		_initialize_audio_system_2d()
 	_ensure_builtin_effect_buses()
 	
 	# Create subsystems (these might call XedatsSingleton.instance())
@@ -315,11 +318,12 @@ func _ready() -> void:
 	add_child(timer)
 	
 	# Set up 2D auto cleanup timer
-	var timer_2d: Timer = Timer.new()
-	timer_2d.wait_time = auto_cleanup_interval
-	timer_2d.autostart = true
-	timer_2d.timeout.connect(_cleanup_inactive_players_2d)
-	add_child(timer_2d)
+	if ClassDB.class_exists(&"XedatsPlayer2D"):
+		var timer_2d: Timer = Timer.new()
+		timer_2d.wait_time = auto_cleanup_interval
+		timer_2d.autostart = true
+		timer_2d.timeout.connect(_cleanup_inactive_players_2d)
+		add_child(timer_2d)
 	
 	# Clear the instantiation flag now that subsystems are initialized.
 	_instantiation_in_progress = false
@@ -342,8 +346,10 @@ func _initialize_audio_system() -> void:
 
 ## Initializes the 2D player pool.
 func _initialize_audio_system_2d() -> void:
+	if not ClassDB.class_exists(&"XedatsPlayer2D"):
+		return
 	for i in default_player_2d_pool_size:
-		var player_2d: XedatsPlayer2D = _create_player_2d()
+		var player_2d: Node = _create_player_2d()
 		_player_2d_pool.append(player_2d)
 
 	if enable_debug_logging:
@@ -386,7 +392,7 @@ func return_player_to_pool(player: XedatsPlayer3D) -> void:
 	_active_players.erase(player)
 	
 	# Return to pool if not at max size
-	if _player_pool.size() < MAX_POOL_SIZE:
+	if _player_pool.size() < max_pool_size:
 		_player_pool.append(player)
 	else:
 		# Destroy if pool is full
@@ -404,16 +410,19 @@ func _create_player() -> XedatsPlayer3D:
 	return player
 
 ## Returns a pre-allocated 2D audio player from the pool.
-## @return XedatsPlayer2D A ready-to-use 2D audio player.
-func get_player_2d_from_pool() -> XedatsPlayer2D:
-	var player: XedatsPlayer2D
+## @return Node A ready-to-use 2D audio player, or null if 2D is unavailable.
+func get_player_2d_from_pool() -> Node:
+	if not ClassDB.class_exists(&"XedatsPlayer2D"):
+		return null
+
+	var player: Node
 
 	if _player_2d_pool.is_empty():
 		player = _create_player_2d()
 		if enable_debug_logging:
 			print("Xedats: Created new 2D player (pool empty)")
 	else:
-		player = _player_2d_pool.pop_back()
+		player = _player_2d_pool.pop_back() as Node
 
 	player._set_pool_info(true, _active_players_2d.size())
 	_active_players_2d.append(player)
@@ -421,8 +430,12 @@ func get_player_2d_from_pool() -> XedatsPlayer2D:
 	return player
 
 ## Returns a 2D audio player to the pool after it finishes playing.
-## @param player The XedatsPlayer2D instance to return to the pool.
-func return_player_2d_to_pool(player: XedatsPlayer2D) -> void:
+## @param player The player node to return to the pool (duck-typed — requires _is_from_pool, _reset_for_pool).
+func return_player_2d_to_pool(player: Node) -> void:
+	if not player.has_method("_set_pool_info"):
+		push_error("Xedats: Attempted to return non-pooled 2D player to pool")
+		return
+
 	if not player._is_from_pool:
 		push_error("Xedats: Attempted to return non-pooled 2D player to pool")
 		return
@@ -431,7 +444,7 @@ func return_player_2d_to_pool(player: XedatsPlayer2D) -> void:
 
 	_active_players_2d.erase(player)
 
-	if _player_2d_pool.size() < MAX_POOL_SIZE_2D:
+	if _player_2d_pool.size() < max_pool_size_2d:
 		_player_2d_pool.append(player)
 	else:
 		player.queue_free()
@@ -439,9 +452,9 @@ func return_player_2d_to_pool(player: XedatsPlayer2D) -> void:
 			print("Xedats: Destroyed 2D player (pool full)")
 
 ## Creates a new pooled 2D player node and adds it under the singleton.
-## @return XedatsPlayer2D Newly created 2D player.
-func _create_player_2d() -> XedatsPlayer2D:
-	var player: XedatsPlayer2D = XedatsPlayer2D.new()
+## @return Node Newly created 2D player node.
+func _create_player_2d() -> Node:
+	var player: Node = ClassDB.instantiate(&"XedatsPlayer2D") as Node
 	player.name = "XedatsPlayer2D_%d" % _next_player_2d_id
 	_next_player_2d_id += 1
 	add_child(player)
@@ -449,13 +462,13 @@ func _create_player_2d() -> XedatsPlayer2D:
 
 ## Automatically cleans up inactive 2D audio players and returns them to the pool.
 func _cleanup_inactive_players_2d() -> void:
-	var to_remove: Array[XedatsPlayer2D] = []
+	var to_remove: Array = []
 	for player in _active_players_2d:
 		if not player.playing:
 			to_remove.append(player)
 
 	for player in to_remove:
-		return_player_2d_to_pool(player)
+		return_player_2d_to_pool(player as Node)
 
 	if enable_debug_logging and not to_remove.is_empty():
 		print("Xedats: Cleaned up %d inactive 2D players" % to_remove.size())
@@ -490,9 +503,11 @@ func create_player_3d(position: Vector3 = Vector3.ZERO, parent: Node = null) -> 
 ## Creates or retrieves a pooled 2D player at the specified screen position.
 ## @param position Screen position for the player.
 ## @param parent Optional parent node to attach the player to.
-## @return XedatsPlayer2D Ready-to-use 2D player.
-func create_player_2d(position: Vector2 = Vector2.ZERO, parent: Node = null) -> XedatsPlayer2D:
-	var player: XedatsPlayer2D = get_player_2d_from_pool()
+## @return Node Ready-to-use 2D player node, or null if 2D is unavailable.
+func create_player_2d(position: Vector2 = Vector2.ZERO, parent: Node = null) -> Node:
+	var player: Node = get_player_2d_from_pool()
+	if player == null:
+		return null
 	player.global_position = position
 
 	if parent:
@@ -559,9 +574,12 @@ func get_current_listener() -> XedatsListener3D:
 ## Creates a new 2D audio listener at the specified position.
 ## @param position The screen position where the listener should be placed.
 ## @param parent Optional parent node to attach the listener to.
-## @return XedatsListener2D A ready-to-use 2D audio listener.
-func create_listener_2d(position: Vector2 = Vector2.ZERO, parent: Node = null) -> XedatsListener2D:
-	var listener: XedatsListener2D = XedatsListener2D.new()
+## @return Node A ready-to-use 2D audio listener, or null if 2D is unavailable.
+func create_listener_2d(position: Vector2 = Vector2.ZERO, parent: Node = null) -> Node:
+	if not ClassDB.class_exists(&"XedatsListener2D"):
+		return null
+
+	var listener: Node = ClassDB.instantiate(&"XedatsListener2D") as Node
 	listener.name = "XedatsListener2D_%d" % _next_listener_2d_id
 	_next_listener_2d_id += 1
 	listener.global_position = position
@@ -579,27 +597,29 @@ func create_listener_2d(position: Vector2 = Vector2.ZERO, parent: Node = null) -
 	return listener
 
 ## Registers a 2D listener in the active listener collection.
-func _register_listener_2d(listener: XedatsListener2D) -> void:
+func _register_listener_2d(listener: Node) -> void:
 	if not _active_listeners_2d.has(listener):
 		_active_listeners_2d.append(listener)
 
 ## Unregisters a 2D listener and clears current listener if it matches.
-func _unregister_listener_2d(listener: XedatsListener2D) -> void:
+func _unregister_listener_2d(listener: Node) -> void:
 	_active_listeners_2d.erase(listener)
 	if _current_listener_2d == listener:
 		_current_listener_2d = null
 
 ## Sets the active 2D audio listener.
-func set_current_listener_2d(listener: XedatsListener2D) -> void:
+func set_current_listener_2d(listener: Node) -> void:
 	if listener == null:
 		push_warning("Xedats: Attempting to set current 2D listener to null")
 		return
 
 	_current_listener_2d = listener
-	listener.make_current()
+	if listener.has_method("make_current"):
+		listener.make_current()
 
 ## Gets the current active 2D listener.
-func get_current_listener_2d() -> XedatsListener2D:
+## @return Node Current 2D listener node, or null.
+func get_current_listener_2d() -> Node:
 	return _current_listener_2d
 
 ## Gets a copy of all configured category volumes.
@@ -831,7 +851,7 @@ func _update_category_volumes() -> void:
 			player.volume_db = linear_to_db(base_volume)
 
 	for player_2d in _active_players_2d:
-		if player_2d.audio_category in _category_volumes:
+		if is_instance_valid(player_2d) and player_2d.audio_category in _category_volumes:
 			var base_volume: float = get_category_volume(player_2d.audio_category)
 			player_2d.volume_db = linear_to_db(base_volume)
 
@@ -909,8 +929,10 @@ func play_audio_container_at_position(container: AudioArrayContainer, position: 
 ## @param volume Linear volume scalar (0.0-1.0). Defaults to 1.0.
 ## @param category Audio category for volume grouping. Defaults to "SFX".
 ## @return The [XedatsPlayer2D] used for playback.
-func play_audio_at_position_2d(stream: AudioStream, position: Vector2, volume: float = 1.0, category: String = "SFX") -> XedatsPlayer2D:
-	var player: XedatsPlayer2D = create_player_2d(position)
+func play_audio_at_position_2d(stream: AudioStream, position: Vector2, volume: float = 1.0, category: String = "SFX") -> Node:
+	var player: Node = create_player_2d(position)
+	if player == null:
+		return null
 	player.stream = stream
 	player.volume_db = linear_to_db(volume)
 	player.audio_category = category
@@ -923,8 +945,10 @@ func play_audio_at_position_2d(stream: AudioStream, position: Vector2, volume: f
 ## @param position Screen-space position where the sound should originate.
 ## @param category Audio category for volume grouping. Defaults to "SFX".
 ## @return The [XedatsPlayer2D] used for playback.
-func play_audio_container_at_position_2d(container: AudioArrayContainer, position: Vector2, category: String = "SFX") -> XedatsPlayer2D:
-	var player: XedatsPlayer2D = create_player_2d(position)
+func play_audio_container_at_position_2d(container: AudioArrayContainer, position: Vector2, category: String = "SFX") -> Node:
+	var player: Node = create_player_2d(position)
+	if player == null:
+		return null
 	player.audio_category = category
 	player.bus = resolve_bus_name(category)
 	player.play_random_from_container(container)
@@ -972,7 +996,7 @@ func get_active_player_bus_routes() -> Array[Dictionary]:
 ## Returns active 2D player routing snapshots for debugging and live inspection.
 func get_active_player_bus_routes_2d() -> Array[Dictionary]:
 	var routes: Array[Dictionary] = []
-	for player: XedatsPlayer2D in _active_players_2d:
+	for player in _active_players_2d:
 		if not is_instance_valid(player):
 			continue
 		var bus_name: String = String(player.bus)
@@ -1083,7 +1107,7 @@ func get_performance_metrics() -> Dictionary:
 		"peak_active_players_2d": _performance_stats["peak_active_players_2d"],
 		"total_players_2d": _player_2d_pool.size() + _active_players_2d.size(),
 		"max_simultaneous_sounds": max_simultaneous_sounds,
-		"available_capacity_percent": (float(_player_pool.size()) / MAX_POOL_SIZE) * 100.0,
+		"available_capacity_percent": (float(_player_pool.size()) / max_pool_size) * 100.0,
 		"listener_count": _active_listeners.size(),
 		"listener_count_2d": _active_listeners_2d.size(),
 		"custom_bus_count": _custom_buses.size(),
@@ -1209,14 +1233,14 @@ func get_system_health() -> Dictionary:
 		health["status"] = "warning"
 		health["warnings"].append("3D player pool running low")
 
-	if _player_2d_pool.size() < default_player_2d_pool_size * 0.25:
+	if _player_2d_pool.size() < default_player_2d_pool_size * 0.25 and ClassDB.class_exists(&"XedatsPlayer2D"):
 		health["status"] = "warning"
 		health["warnings"].append("2D player pool running low")
 
 	if metrics["listener_count"] == 0:
 		health["warnings"].append("No 3D audio listeners registered")
 
-	if metrics["listener_count_2d"] == 0:
+	if metrics["listener_count_2d"] == 0 and ClassDB.class_exists(&"XedatsListener2D"):
 		health["warnings"].append("No 2D audio listeners registered")
 	
 	if health["capacity_usage_percent"] > 95.0:

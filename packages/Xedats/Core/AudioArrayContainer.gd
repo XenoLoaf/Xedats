@@ -107,7 +107,7 @@ func get_stream() -> AudioStream:
 		PlaybackMode.SEQUENTIAL:
 			return StreamContainer[0] # For now, just return first
 		PlaybackMode.RANDOM:
-			return StreamContainer[randi() % StreamContainer.size()]
+			return StreamContainer[randi_range(0, StreamContainer.size() - 1)]
 		PlaybackMode.RANDOM_NO_REPEAT:
 			return _get_random_no_repeat()
 	
@@ -122,14 +122,14 @@ func _get_random_no_repeat() -> AudioStream:
 	var new_index: int
 	var attempts: int = 0
 	while attempts < 10: # Prevent infinite loop
-		new_index = randi() % StreamContainer.size()
+		new_index = randi_range(0, StreamContainer.size() - 1)
 		if new_index != _last_random_index:
 			_last_random_index = new_index
 			return StreamContainer[new_index]
 		attempts += 1
 	
 	# Fallback if we can't find a non-repeating index
-	return StreamContainer[randi() % StreamContainer.size()]
+	return StreamContainer[randi_range(0, StreamContainer.size() - 1)]
 
 ## Generates randomized volume multiplier within configured range.
 ## @return float Random volume multiplier.

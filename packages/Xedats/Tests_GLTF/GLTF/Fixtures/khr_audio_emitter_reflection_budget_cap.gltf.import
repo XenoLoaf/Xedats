@@ -4,18 +4,20 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://w5kcjall1vwq"
-path="res://.godot/imported/khr_audio_emitter_reflection_budget_cap.gltf-35beb8e12f6de406034c9c5ec6f9ef6a.scn"
+path="res://.godot/imported/khr_audio_emitter_reflection_budget_cap.gltf-e86dc08c24da6eca2bef638afde0c219.scn"
 
 [deps]
 
-source_file="res://Xedats/Tests/GLTF/Fixtures/khr_audio_emitter_reflection_budget_cap.gltf"
-dest_files=["res://.godot/imported/khr_audio_emitter_reflection_budget_cap.gltf-35beb8e12f6de406034c9c5ec6f9ef6a.scn"]
+source_file="res://addons/xedats/Tests_GLTF/GLTF/Fixtures/khr_audio_emitter_reflection_budget_cap.gltf"
+dest_files=["res://.godot/imported/khr_audio_emitter_reflection_budget_cap.gltf-e86dc08c24da6eca2bef638afde0c219.scn"]
 
 [params]
 
 nodes/root_type=""
 nodes/root_name=""
 nodes/root_script=null
+mesh_library/use_node_names_as_mesh_names=false
+array_mesh/deduplicate_surfaces=true
 nodes/apply_root_scale=true
 nodes/root_scale=1.0
 nodes/import_as_skeleton_bones=false
@@ -40,3 +42,4 @@ materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=1
+gltf/texture_map_mode=0

@@ -128,6 +128,14 @@ var _occlusion_check_timer: float = 0.0
 ## Current occlusion state between this source and active listener.
 var _is_occluded: bool = false
 
+## @var _effect_bus_name
+## Per-player effect bus name used for occlusion and distance filtering.
+var _effect_bus_name: String = ""
+
+## @var _occlusion_filter_value
+## Smoothed occlusion filter strength (0.0 = open, 1.0 = fully occluded).
+var _occlusion_filter_value: float = 0.0
+
 ## @signal audio_finished_custom(player)
 ## Emitted when playback finishes, providing this player instance.
 signal audio_finished_custom(player: XedatsPlayer3D)
@@ -286,16 +294,27 @@ func _reset_for_pool() -> void:
 	_audio_container = null
 	_velocity = Vector3.ZERO
 	_is_occluded = false
+	_occlusion_filter_value = 0.0
+
+	if not _effect_bus_name.is_empty():
+		var xedats: XedatsSingleton = XedatsSingleton.instance()
+		if xedats:
+			xedats.clear_bus_effects(_effect_bus_name)
+			xedats.remove_audio_bus(_effect_bus_name)
+		bus = "Master"
+		_effect_bus_name = ""
 
 # ============ SPATIAL AUDIO METHODS ============
 
 ## Initializes spatial-audio-related runtime state and integration hooks.
 func _setup_spatial_audio() -> void:
-	# Spatial audio setup
-	# Note: Effects (lowpass filtering for occlusion, etc.) should be applied
-	# via the audio bus system, not directly on the player.
-	# See XedatsSingleton.add_bus_effect() for details.
-	pass
+	var xedats: XedatsSingleton = XedatsSingleton.instance()
+	if not xedats:
+		return
+
+	_effect_bus_name = "PlayerFX_%s" % name
+	xedats.create_audio_bus(_effect_bus_name, audio_category)
+	bus = _effect_bus_name
 
 ## Updates doppler pitch based on relative source/listener motion.
 ## @param delta Time elapsed since previous frame in seconds.
@@ -349,17 +368,41 @@ func _check_occlusion() -> void:
 		occlusion_changed.emit(_is_occluded)
 		_update_occlusion_filtering()
 
-## Hook for applying occlusion filtering via bus effects.
+## Stores occlusion state change as target for distance filtering.
 func _update_occlusion_filtering() -> void:
-	# Audio effects should be applied via the audio bus system
-	# See XedatsSingleton.add_bus_effect() for effect chain management
-	pass
+	pass  # Filtering is applied each frame in _update_distance_filtering
 
-## Hook for applying distance filtering via bus effects.
+## Applies a combined occlusion and distance lowpass filter on the per-player effect bus.
 func _update_distance_filtering() -> void:
-	# Audio effects should be applied via the audio bus system
-	# See XedatsSingleton.add_bus_effect() for effect chain management
-	pass
+	if _effect_bus_name.is_empty():
+		return
+
+	var xedats: XedatsSingleton = XedatsSingleton.instance()
+	if not xedats:
+		return
+
+	# Smooth occlusion transition
+	var occlusion_target: float = 1.0 if _is_occluded else 0.0
+	_occlusion_filter_value = lerp(_occlusion_filter_value, occlusion_target, 0.15)
+
+	# Calculate distance factor
+	var listener: XedatsListener3D = xedats.get_current_listener() if xedats else null
+	var distance_factor: float = 0.0
+	if listener and max_distance_for_attenuation > 0.0:
+		var distance: float = global_position.distance_to(listener.global_position)
+		distance_factor = clamp(distance / max_distance_for_attenuation, 0.0, 1.0)
+
+	# Combined filter strength: the stronger of occlusion or distance
+	var filter_strength: float = max(_occlusion_filter_value * occlusion_intensity, distance_factor)
+
+	# Apply or remove the lowpass filter
+	xedats.clear_bus_effects(_effect_bus_name)
+	if filter_strength > 0.01:
+		var cutoff: float = lerpf(20000.0, 400.0, filter_strength)
+		var lowpass: AudioEffectLowPassFilter = AudioEffectLowPassFilter.new()
+		lowpass.cutoff_hz = cutoff
+		lowpass.resonance = 0.5
+		xedats.add_bus_effect(_effect_bus_name, lowpass)
 
 ## Returns current estimated velocity.
 ## @return Vector3 Current velocity estimate.

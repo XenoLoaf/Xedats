@@ -360,7 +360,7 @@ func _resolve_player_from_route(route: Dictionary) -> Node:
 	if scene_tree == null or scene_tree.root == null:
 		return null
 	var node: Node = scene_tree.root.get_node_or_null(NodePath(player_path))
-	if (node is XedatsPlayer3D or node is XedatsPlayer2D) and is_instance_valid(node):
+	if (node is XedatsPlayer3D or (ClassDB.class_exists(&"XedatsPlayer2D") and node is XedatsPlayer2D)) and is_instance_valid(node):
 		return node
 	return null
 

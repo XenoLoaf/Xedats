@@ -33,7 +33,7 @@ const TEXTURE_CADENCE_MAX_SECONDS: float = 2.0
 const TEXTURE_CADENCE_DEFAULT_SECONDS: float = 1.0
 ## Script reference for the distance-band policy utility.
 ## Loaded as a [Script] constant to remain re-entrant-safe in headless contexts.
-const DISTANCE_BAND_POLICY_SCRIPT: Script = preload("uid://641jfjwsnxh8")
+const DISTANCE_BAND_POLICY_SCRIPT: Script = preload("xedats_distance_band_policy.gd")
 const PORTAL_STATE_POLL_INTERVAL: float = 0.1
 const DEFAULT_PORTAL_STATE_OPEN_PROPERTY: StringName = &"is_open"
 const DEFAULT_PORTAL_STATE_OPENNESS_PROPERTY: StringName = &"portal_openness"

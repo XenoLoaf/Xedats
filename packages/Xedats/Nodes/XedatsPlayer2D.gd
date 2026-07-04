@@ -18,6 +18,10 @@ extends AudioStreamPlayer2D
 
 @export var priority: int = 0
 
+@export var enable_occlusion: bool = true
+
+@export var occlusion_check_interval: float = 0.5
+
 var _is_from_pool: bool = false
 
 var _pool_id: int = -1
@@ -25,6 +29,8 @@ var _pool_id: int = -1
 var _audio_container: AudioArrayContainer
 
 var _is_occluded: bool = false
+
+var _occlusion_check_timer: float = 0.0
 
 signal audio_finished_custom(player: XedatsPlayer2D)
 
@@ -128,5 +134,36 @@ func is_occluded() -> bool:
 func set_occluded(occluded: bool) -> void:
 	var was_occluded: bool = _is_occluded
 	_is_occluded = occluded
+	if was_occluded != _is_occluded:
+		occlusion_changed.emit(_is_occluded)
+
+func _process(delta: float) -> void:
+	if not enable_occlusion:
+		return
+	
+	_occlusion_check_timer -= delta
+	if _occlusion_check_timer <= 0.0:
+		_check_occlusion_2d()
+		_occlusion_check_timer = occlusion_check_interval
+
+func _check_occlusion_2d() -> void:
+	var xedats: XedatsSingleton = XedatsSingleton.instance()
+	var listener: XedatsListener2D = xedats.get_current_listener_2d() if xedats else null
+	if not listener:
+		_is_occluded = false
+		return
+	
+	var space_state: PhysicsDirectSpaceState2D = get_world_2d().direct_space_state
+	var query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(
+		listener.global_position,
+		global_position
+	)
+	query.exclude = [self]
+	
+	var result: Dictionary = space_state.intersect_ray(query)
+	
+	var was_occluded: bool = _is_occluded
+	_is_occluded = not result.is_empty()
+	
 	if was_occluded != _is_occluded:
 		occlusion_changed.emit(_is_occluded)

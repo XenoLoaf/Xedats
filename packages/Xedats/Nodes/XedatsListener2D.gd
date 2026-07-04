@@ -1,17 +1,12 @@
 class_name XedatsListener2D
 extends AudioListener2D
 
-## XedatsListener2D is an enhanced audio listener for the Xedats audio system.
-##
-## The listener represents the player's perspective in 2D audio space. Only one
-## listener can be active at a time. Audio is mixed relative to the active listener's
-## position on the current viewport.
+## XedatsListener2D is a 2D audio listener for the Xedats audio system.
 ##
 ## Features:
-## - Automatic registration with XedatsSingleton
-## - Reverb zone support for 2D spatial effects (Area2D)
-## - Custom attenuation profiles
-## - Automatic cleanup when removed from scene
+## - 2D audio perspective management
+## - Reverb zone integration
+## - Pool lifecycle support
 ##
 ## See Xedats.md for comprehensive usage documentation and examples.
 
@@ -24,6 +19,8 @@ extends AudioListener2D
 var _is_from_pool: bool = false
 
 var _pool_id: int = -1
+
+var _reverb_effect_index: int = -1
 
 func _ready() -> void:
 	var xedats: XedatsSingleton = XedatsSingleton.instance()
@@ -40,7 +37,20 @@ func set_reverb_zone(zone: Area2D) -> void:
 	_update_reverb_settings()
 
 func _update_reverb_settings() -> void:
-	pass
+	var xedats: XedatsSingleton = XedatsSingleton.instance()
+	if not xedats:
+		return
+	
+	if _reverb_effect_index >= 0:
+		xedats.remove_bus_effect("Master", _reverb_effect_index)
+		_reverb_effect_index = -1
+	
+	if reverb_zone:
+		var reverb: AudioEffectReverb = AudioEffectReverb.new()
+		reverb.room_size = reverb_zone.get_meta(&"reverb_room_size", 0.5)
+		reverb.damping = reverb_zone.get_meta(&"reverb_damping", 0.5)
+		reverb.wet = reverb_zone.get_meta(&"reverb_wet", 1.0)
+		_reverb_effect_index = xedats.add_bus_effect("Master", reverb)
 
 func _set_pool_info(is_from_pool: bool, pool_id: int) -> void:
 	_is_from_pool = is_from_pool
@@ -50,3 +60,4 @@ func _reset_for_pool() -> void:
 	listener_name = "PooledListener"
 	reverb_zone = null
 	custom_attenuation = 1.0
+	_reverb_effect_index = -1

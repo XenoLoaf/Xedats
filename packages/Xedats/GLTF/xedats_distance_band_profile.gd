@@ -46,6 +46,10 @@ extends Resource
 ## Event-rate scale for the far band.
 @export var far_rate_scale: float = 0.35
 
+## When enabled, distance bands are evaluated in 2D viewport-space
+## instead of 3D world-space. Useful for top-down and side-scrolling games.
+@export var is_2d: bool = false
+
 
 ## Returns the gain scale for a given raw [param distance] in world units.
 func gain_scale_at(distance: float) -> float:

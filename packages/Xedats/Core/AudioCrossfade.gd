@@ -69,10 +69,10 @@ static func instance() -> AudioCrossfade:
 
 class CrossfadeInfo:
 	## @var source_player
-	## Player being faded out (XedatsPlayer3D or XedatsPlayer2D).
+	## Player being faded out (duck-typed — requires set_volume_linear_normalized).
 	var source_player: Node
 	## @var target_player
-	## Player being faded in (XedatsPlayer3D or XedatsPlayer2D).
+	## Player being faded in (duck-typed — requires set_volume_linear_normalized).
 	var target_player: Node
 	## @var duration
 	## Total fade duration in seconds.
@@ -232,8 +232,7 @@ func fade_out_player(player: Node, duration: float = 1.0, curve: Curve = null) -
 		return null
 	
 	# Create a dummy silent player
-	var silent_player: Node = XedatsPlayer3D.new()
-	silent_player.volume_db = linear_to_db(0.0)
+	var silent_player: Node = SilentPlayer.new()
 	
 	# Start the crossfade
 	var crossfade: CrossfadeInfo = start_crossfade(player, silent_player, duration, curve)
@@ -257,8 +256,7 @@ func fade_in_player(player: Node, duration: float = 1.0,
 		return null
 	
 	# Create a dummy silent player as source
-	var silent_player: Node = XedatsPlayer3D.new()
-	silent_player.volume_db = linear_to_db(0.0)
+	var silent_player: Node = SilentPlayer.new()
 	
 	# Start with player at target volume
 	player.set_volume_linear_normalized(target_volume)
@@ -294,18 +292,74 @@ func get_active_crossfade_count() -> int:
 	return _active_crossfades.size()
 
 ## Creates a curve suitable for eased fade behavior.
-## @param _ease_type Requested ease type placeholder.
-## @return Curve Generated curve instance.
-static func create_ease_curve(_ease_type: Tween.EaseType = Tween.EASE_IN_OUT) -> Curve:
+## Supports quadratic, cubic, exponential, and sine transitions.
+## @param ease_type Ease direction: EASE_IN, EASE_OUT, EASE_IN_OUT, EASE_OUT_IN.
+## @param transition_type Curve shape: TRANS_LINEAR, TRANS_QUAD, TRANS_CUBIC, TRANS_EXPO, TRANS_SINE.
+## @return Curve Generated curve with 11 sample points.
+static func create_ease_curve(ease_type: Tween.EaseType = Tween.EASE_IN_OUT, transition_type: Tween.TransitionType = Tween.TRANS_LINEAR) -> Curve:
 	var curve: Curve = Curve.new()
 	
-	# For now, create a linear curve. Full ease support would require custom implementation
-	# of easing functions (e.g., ease_in_out_quad, ease_out_cubic, etc.)
 	for i in range(0, 11):
 		var t: float = float(i) / 10.0
-		curve.add_point(Vector2(t, t)) # Linear interpolation
+		var value: float = _evaluate_ease(t, ease_type, transition_type)
+		curve.add_point(Vector2(t, value))
 	
 	return curve
+
+
+## Evaluates an easing function at normalized time [param t] (0.0-1.0).
+static func _evaluate_ease(t: float, ease_type: Tween.EaseType, transition_type: Tween.TransitionType) -> float:
+	match ease_type:
+		Tween.EASE_IN:
+			return _ease_in(t, transition_type)
+		Tween.EASE_OUT:
+			return _ease_out(t, transition_type)
+		Tween.EASE_IN_OUT:
+			return _ease_in_out(t, transition_type)
+		Tween.EASE_OUT_IN:
+			return _ease_out_in(t, transition_type)
+		_:
+			return t
+
+
+static func _ease_in(t: float, transition_type: Tween.TransitionType) -> float:
+	match transition_type:
+		Tween.TRANS_QUAD:
+			return t * t
+		Tween.TRANS_CUBIC:
+			return t * t * t
+		Tween.TRANS_EXPO:
+			return 0.0 if t == 0.0 else pow(2.0, 10.0 * (t - 1.0))
+		Tween.TRANS_SINE:
+			return 1.0 - cos(t * PI / 2.0)
+		_:
+			return t
+
+
+static func _ease_out(t: float, transition_type: Tween.TransitionType) -> float:
+	match transition_type:
+		Tween.TRANS_QUAD:
+			return 1.0 - (1.0 - t) * (1.0 - t)
+		Tween.TRANS_CUBIC:
+			return 1.0 - pow(1.0 - t, 3.0)
+		Tween.TRANS_EXPO:
+			return 1.0 if t == 1.0 else 1.0 - pow(2.0, -10.0 * t)
+		Tween.TRANS_SINE:
+			return sin(t * PI / 2.0)
+		_:
+			return t
+
+
+static func _ease_in_out(t: float, transition_type: Tween.TransitionType) -> float:
+	if t < 0.5:
+		return _ease_in(t * 2.0, transition_type) / 2.0
+	return 0.5 + _ease_out((t - 0.5) * 2.0, transition_type) / 2.0
+
+
+static func _ease_out_in(t: float, transition_type: Tween.TransitionType) -> float:
+	if t < 0.5:
+		return _ease_out(t * 2.0, transition_type) / 2.0
+	return 0.5 + _ease_in((t - 0.5) * 2.0, transition_type) / 2.0
 
 ## Creates a curve from explicit control points.
 ## @param points Control points in normalized time/value space.

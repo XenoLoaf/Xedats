@@ -4,10 +4,10 @@ extends RefCounted
 ## Single configuration point for file-system path resolution across the
 ## Xedats glTF extension module.
 ##
-## [b]Porting to a new project:[/b] change [member XEDATS_ROOT] to the
-## [code]res://[/code] path of the Xedats root folder in the target project.
-## All other path constants and [method ResourceLoader.load] calls in this module
-## are derived from that value at runtime, so no other edits are required.
+## The [member XEDATS_ROOT] is auto-detected at runtime by searching for the
+## Xedats plugin.cfg in the standard addon location. For projects that install
+## Xedats in a non-standard location, set [member XEDATS_ROOT] manually before
+## any other Xedats API calls.
 ##
 ## [b]Note on [code]preload()[/code]:[/b] GDScript requires compile-time string
 ## literals for [code]preload()[/code].  Those calls use Godot 4 UIDs
@@ -15,9 +15,24 @@ extends RefCounted
 ## variable is therefore only consumed by [method ResourceLoader.load] paths and
 ## [code].tres[/code] resource path fallbacks.
 
-## Root folder of the Xedats module tree.  Must be set to match the [code]res://[/code]
-## path used in the host project.  Trailing slash must be omitted.
-static var XEDATS_ROOT: String = "res://ProjectHelix/Xedats"
+## Root folder of the Xedats module tree as a [code]res://[/code] path.
+## Auto-detected on first access. Set manually to override detection.
+## Trailing slash must be omitted.
+static var XEDATS_ROOT: String:
+	get:
+		if _cached_root.is_empty():
+			_cached_root = _detect_xedats_root()
+		return _cached_root
+	set(value):
+		_cached_root = value
+
+static var _cached_root: String = ""
+
+
+static func _detect_xedats_root() -> String:
+	if ResourceLoader.exists("res://addons/xedats/plugin.cfg"):
+		return "res://addons/xedats"
+	return "res://ProjectHelix/Xedats"
 
 
 static func modules_root() -> String:
