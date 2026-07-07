@@ -1,6 +1,6 @@
 # Xedats — Workflow Practices
 
-Operational guidelines for working on this project. Agents and contributors should read this alongside `AGENTS.md`.
+Operational guidelines for working on this project. Agents and contributors should read this alongside `../AGENTS.md`.
 
 ---
 
@@ -21,16 +21,15 @@ Operational guidelines for working on this project. Agents and contributors shou
 
 | Location | Role |
 |----------|------|
-| `j:\Godot_Projects\Xedats\Packages\Xedats\` | **Canonical source** — all code changes go here first |
-| `j:\[2] Game Development\GitHub Projects Tools\xedats_master\` | **GitHub mirror** — sync after canonical validation |
+| `j:\[2] Game Development\GitHub Projects Tools\xedats_master\` | **Primary source** — all code changes go here |
+| `j:\Godot_Projects\Xedats\Packages\Xedats\` | **Canonical source (legacy)** — being phased out; sync if still active |
 
-The `Version / Sync Status` table at the bottom of `BACKLOG.md` tracks the current sync state. Check it at the start of every session.
+The `Version / Sync Status` table at the bottom of `../BACKLOG.md` tracks the current sync state. Check it at the start of every session.
 
 **When to ask which target applies:**
-- The user says "fix this" or "update X" without specifying a path.
-- The task involves a `.gd` file that also exists in the canonical source.
-- The change is large enough that manual syncing may introduce drift between the two locations.
-- The user references audio behavior in their project — that project likely uses the canonical source, not this repo.
+- The user says "fix this" or "update X" without specifying a path — assume this repo is the target.
+- The task involves a `.gd` file that also exists in the legacy canonical source.
+- The user references audio behavior in their project — that project may use either source.
 
 ---
 
@@ -39,26 +38,27 @@ The `Version / Sync Status` table at the bottom of `BACKLOG.md` tracks the curre
 Run before and after every code change. The check confirms there are no GDScript parse or compile errors in the project.
 
 ```powershell
-& 'J:\Godot_Install\Godot_v4.7-beta2_mono_win64\Godot_v4.7-beta2_mono_win64_console.exe' --path 'j:\Godot_Projects\Xedats' --headless --quit-after 5 2>&1 | Select-String "SCRIPT ERROR|Parse Error|Compile Error"
+& 'J:\Godot_Install\Active_Versions\Godot_v4.7-stable_mono_win64\Godot_v4.7-stable_mono_win64_console.exe' --path 'J:\[2] Game Development\GitHub Projects Tools\xedats_master\Xedats-Standalone\test-environment' --headless --quit-after 5 2>&1 | Select-String "SCRIPT ERROR|Parse Error|Compile Error"
 ```
 
 **Project path options (in order of preference):**
 
 | Option | Path | When to use |
 |--------|------|-------------|
-| Canonical project | `j:\Godot_Projects\Xedats\` | Working in canonical source |
-| Scratch test project | *(set up locally)* | Working in this GitHub repo |
+| Test project | `Xedats-Standalone\test-environment\` | Primary — working in this GitHub repo |
+| Canonical project | `j:\Godot_Projects\Xedats\` | Legacy — canonical source (being phased out) |
+| Scratch project | *(set up locally)* | Fallback if test-environment is unavailable |
 | Manual review | *(no project available)* | Last resort — review types and casts by hand |
 
 **Interpreting results:**
 - No output → clean, no errors.
-- Exit code 1 with only RID/resource-leak warnings → normal for beta builds, not a script error.
+- Exit code 1 with only RID/resource-leak warnings → normal for development builds, not a script error.
 - Any line matching `SCRIPT ERROR`, `Parse Error`, or `Compile Error` → must be fixed before proceeding.
 
 **GUI boot check** (after editor plugin or `@tool` script changes):
 
 ```powershell
-& 'J:\Godot_Install\Godot_v4.7-beta2_mono_win64\Godot_v4.7-beta2_mono_win64_console.exe' 'j:\Godot_Projects\Xedats\project.godot' 2>&1 | Select-String "SCRIPT ERROR|Parse Error|Compile Error"
+& 'J:\Godot_Install\Active_Versions\Godot_v4.7-stable_mono_win64\Godot_v4.7-stable_mono_win64_console.exe' 'J:\[2] Game Development\GitHub Projects Tools\xedats_master\Xedats-Standalone\test-environment\project.godot' 2>&1 | Select-String "SCRIPT ERROR|Parse Error|Compile Error"
 ```
 
 The headless parse misses some runtime errors (undeclared identifiers in `@tool` scripts, missing methods on editor classes). Use the GUI boot check when editing `xedats_gltf_document_extension.gd` or any other `@tool`-annotated file.
@@ -150,6 +150,8 @@ The GLTF module (`packages/Xedats/GLTF/`) is a `GLTFDocumentExtension` bridge an
 
 ## 6. Updating BACKLOG.md
 
+> Note: `BACKLOG.md` lives at `../BACKLOG.md` (one level above this file, in the `xedats_master/` root).
+
 When completing a backlog task:
 
 1. Move the row from **Open Tasks** (or Planned Features) to the **Completed** table.
@@ -182,9 +184,9 @@ When a headless test runner is added for runtime behavior, update this section w
 
 Use this before closing a work session to confirm the repo state is consistent.
 
-- [ ] Compile check passed (canonical project or scratch project).
-- [ ] If code was changed in this repo: confirmed this is the intended target (not the canonical source).
-- [ ] If code was changed in the canonical source: synced the updated `.gd` files to this repo.
-- [ ] `BACKLOG.md` open tasks reflect current state (nothing completed without moving the row).
-- [ ] `Version / Sync Status` table in `BACKLOG.md` is accurate.
+- [ ] Compile check passed (test-environment or scratch project).
+- [ ] If code was changed in this repo: confirmed this is the intended target.
+- [ ] If code was changed in legacy canonical source: synced the updated `.gd` files to this repo.
+- [ ] `../BACKLOG.md` open tasks reflect current state (nothing completed without moving the row).
+- [ ] `Version / Sync Status` table in `../BACKLOG.md` is accurate.
 - [ ] No references to `Xebug`, `AutoloadManager`, or external packages were introduced in `.gd` files.

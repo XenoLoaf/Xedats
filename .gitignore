@@ -1,8 +1,8 @@
 # Godot editor data
 .godot/
 .import/
-pipeline-kit/
-test-project/
+*.uid
+test-environment/
 
 # Mono/C# build output
 .mono/
@@ -11,5 +11,3 @@ test-project/
 Thumbs.db
 .DS_Store
 /arena
-/docs
-BACKLOG.md

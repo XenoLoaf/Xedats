@@ -1,18 +1,20 @@
 # Setup glTF Audio Surfaces
 
 _Xedats glTF Audio — Author Reference_  
-_Last updated: Xedats 0.1.0 / Godot 4.6.1_
+_Last updated: Xedats 1.1.0 / Godot 4.7_
 
 ---
 
 ## Overview
 
+> **Extension naming:** Xedats uses the `XEDATS_` vendor prefix for its original glTF audio extensions. These are not implementations of any published Khronos or OMI specification. See the repository `THIRDPARTY_NOTICES.md` for details.
+
 The Xedats glTF module bridges two glTF audio extensions into the Xedats runtime:
 
 | Extension | Purpose |
 |---|---|
-| `KHR_audio_emitter` | Attaches audio playback to a 3D scene node via clip URI, named event, or multi-clip container |
-| `OMI_audio_material` | Describes acoustic surface properties (absorption, transmission, reflection) that map to a deterministic `EffectChain` on an Xedats audio bus |
+| `XEDATS_audio_emitter` | Attaches audio playback to a 3D scene node via clip URI, named event, or multi-clip container |
+| `XEDATS_audio_material` | Describes acoustic surface properties (absorption, transmission, reflection) that map to a deterministic `EffectChain` on an Xedats audio bus |
 
 Both extensions are handled by a single `GLTFDocumentExtension` registered by the `xedats_gltf` editor plugin. Import can be tested headlessly; see [Running Fixture Tests](#running-fixture-tests).
 
@@ -24,7 +26,7 @@ Project-specific Xedats pathing for the glTF module is centralized in `XedatsGLT
 static var XEDATS_ROOT: String = "res://ProjectHelix/Xedats"
 ```
 
-File: `res://ProjectHelix/Xedats/Modules/GLTF/xedats_gltf_config.gd`
+File: `res://ProjectHelix/Xedats/GLTF/xedats_gltf_config.gd`
 
 This is the single path you change when the Xedats module lives somewhere else in a different project. Runtime/resource lookups in the importer and fixture runner are derived from this root through helpers such as:
 
@@ -64,11 +66,11 @@ The plugin registers `GLTFDocumentExtensionXedatsAudio` globally for the whole e
 
 ---
 
-## KHR_audio_emitter
+## XEDATS_audio_emitter
 
 ### What it does at runtime
 
-When Godot imports a glTF that contains `KHR_audio_emitter` the importer creates an `XedatsGLTFAudioEmitterBinding` child node on every affected scene node. At scene instantiation (`_ready`) the binding fires the audio through whichever Xedats service is available:
+When Godot imports a glTF that contains `XEDATS_audio_emitter` the importer creates an `XedatsGLTFAudioEmitterBinding` child node on every affected scene node. At scene instantiation (`_ready`) the binding fires the audio through whichever Xedats service is available:
 
 1. **Named Xedats event** — if `event_name` resolves to a registered event in `AudioEventSystem`, uses `trigger_event()`. Category is applied to the pooled player.
 2. **Multi-source container** — if 2+ source paths are present, builds an `AudioArrayContainer` in `RANDOM_NO_REPEAT` mode and routes through `XedatsSingleton.play_audio_container_at_position()`.
@@ -81,7 +83,7 @@ When Godot imports a glTF that contains `KHR_audio_emitter` the importer creates
 // Document root
 {
   "extensions": {
-    "KHR_audio_emitter": {
+    "XEDATS_audio_emitter": {
       "sources": [
         {
           "uri": "../../../../Sound/Doors/open_gate_sfx.wav",
@@ -108,7 +110,7 @@ When Godot imports a glTF that contains `KHR_audio_emitter` the importer creates
     {
       "name": "GateNode",
       "extensions": {
-        "KHR_audio_emitter": { "emitter": 0 }
+        "XEDATS_audio_emitter": { "emitter": 0 }
       }
     }
   ]
@@ -171,7 +173,7 @@ To keep naming consistent with the runtime docs:
 - **Category base lane** means routing by the category bus name itself (for example `SFX`, `Music`, `Ambient`).
 - **Category effect lane** means the paired effect bus used by runtime helpers (for example `SFXEffects -> SFX`).
 
-Current `KHR_audio_emitter` authoring maps by `xedats_category` (base-lane category intent). There is not yet a dedicated `KHR_audio_emitter` extras key for forcing effect-lane routing directly.
+Current `XEDATS_audio_emitter` authoring maps by `xedats_category` (base-lane category intent). There is not yet a dedicated `XEDATS_audio_emitter` extras key for forcing effect-lane routing directly.
 
 When a precomputed propagation profile includes `target_bus_name`, that explicit bus route takes precedence for that emitter at runtime.
 
@@ -216,7 +218,7 @@ The binding builds an `AudioArrayContainer` with `RANDOM_NO_REPEAT` playback mod
 
 ### Reflection budget extras (Group A MVP)
 
-`KHR_audio_emitter.extras` supports an optional reflection budget tier:
+`XEDATS_audio_emitter.extras` supports an optional reflection budget tier:
 
 ```jsonc
 "extras": {
@@ -502,11 +504,11 @@ These APIs are intended as the lowest-friction substrate for future HUD, inspect
 
 ---
 
-## OMI_audio_material
+## XEDATS_audio_material
 
 ### What it does at runtime
 
-Nodes or materials that carry `OMI_audio_material` receive:
+Nodes or materials that carry `XEDATS_audio_material` receive:
 
 - `omi_audio_material` metadata — the raw parsed values (absorption, transmission, reflection, optional category/bus).
 - `xedats_omi_effect_chain` metadata — a ready-to-use `EffectChain` resource.
@@ -521,7 +523,7 @@ If `XedatsSingleton` is absent the chain is stored in metadata only (no bus is c
 {
   "name": "WallPanel",
   "extensions": {
-    "OMI_audio_material": {
+    "XEDATS_audio_material": {
       "absorption":   0.25,   // 0 = fully reflective, 1 = fully absorptive
       "transmission": 0.50,   // 0 = opaque to sound, 1 = fully transparent
       "reflection":   0.75,   // 0 = no reverb contribution, 1 = strong echo
@@ -583,10 +585,10 @@ XedatsOMI_<NodeName>
 
 ### OMI precedence
 
-When both node-level and material-level `OMI_audio_material` are authored for the same node, the importer uses:
+When both node-level and material-level `XEDATS_audio_material` are authored for the same node, the importer uses:
 
-1. Node-level `OMI_audio_material` (highest precedence)
-2. Material-level `OMI_audio_material` resolved through `mesh.primitives[].material`
+1. Node-level `XEDATS_audio_material` (highest precedence)
+2. Material-level `XEDATS_audio_material` resolved through `mesh.primitives[].material`
 
 This precedence applies to parsed metadata values, mapped `EffectChain`, and selected bus name.
 
@@ -629,7 +631,7 @@ The runner performs these steps:
 
 **Headless (CI):**
 ```powershell
-& "j:\Godot_Install\Godot_v4.6.1-stable_mono_win64\Godot_v4.6.1-stable_mono_win64_console.exe" `
+& "j:\Godot_Install\Godot_v4.7-stable_mono_win64\Godot_v4.7-stable_mono_win64_console.exe" `
     --headless --path "j:\Godot_Projects\ProjectHelix\MainProject" `
     "res://ProjectHelix/Xedats/Tests/GLTF/xedats_gltf_fixture_runner.tscn"
 ```
@@ -678,8 +680,8 @@ Additional runtime assertions in the fixture runner:
 
 As the module grows, add new sections here for:
 
-- `KHR_audio_emitter` v2 positional cone data (inner/outer angle, range cutoff)
-- `OMI_audio_material` multi-channel per-frequency-band absorption arrays
+- `XEDATS_audio_emitter` v2 positional cone data (inner/outer angle, range cutoff)
+- `XEDATS_audio_material` multi-channel per-frequency-band absorption arrays
 - Reverb zone volumes linked to OMI material bus sends
 - Import-time asset validation and error reporting improvements
 - Integration with Godot's physics-based audio occlusion

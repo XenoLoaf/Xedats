@@ -7,8 +7,8 @@ Source bibliography folder: `j:\Godot_Projects\ProjectHelix\Godot Spatial Audio 
 ## Why this page exists
 
 The current Xedats glTF integration already supports:
-- `KHR_audio_emitter` routing through `AudioEventSystem` / `XedatsSingleton`
-- `OMI_audio_material` mapping into deterministic `EffectChain` behavior
+- `XEDATS_audio_emitter` routing through `AudioEventSystem` / `XedatsSingleton`
+- `XEDATS_audio_material` mapping into deterministic `EffectChain` behavior
 - State-aware category fallback and mute handling
 
 These papers suggest next-stage improvements for perceptual quality, scalable runtime cost, and physically motivated tuning.
@@ -30,7 +30,7 @@ Second pass note: additional non-`.bib` PDFs in the same folder were reviewed by
 - Use it to drive subtle post-processing in OMI-derived reverb tuning:
   - lower growth profile → drier / less diffuse
   - higher growth profile → denser tail / higher wetness tendency
-- Keep implementation data-driven so this is a parameter layer over existing `OMI_audio_material` mapping, not a rewrite.
+- Keep implementation data-driven so this is a parameter layer over existing `XEDATS_audio_material` mapping, not a rewrite.
 
 **Link:** https://www.microsoft.com/en-us/research/publication/a-sparsity-measure-for-echo-density-growth-in-general-environments/
 

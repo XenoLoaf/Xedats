@@ -24,7 +24,7 @@ Covered fixtures:
 - `khr_audio_emitter_portal_source_path_bad.gltf`: validates unresolved `xedats_portal_source_path` follows warning path and leaves adapter unbound.
 - `khr_audio_emitter_precomputed_missing.gltf`: validates missing precomputed assets warn and preserve runtime fallback.
 - `khr_audio_emitter_precomputed_probe_region.gltf`: validates probe-region fallback resolves a precomputed profile.
-- `omi_audio_material_node_extension.gltf`: validates `OMI_audio_material` payload parsing, `EffectChain` mapping, and custom bus creation.
+- `omi_audio_material_node_extension.gltf`: validates `XEDATS_audio_material` payload parsing, `EffectChain` mapping, and custom bus creation.
 
 The runner registers the `GLTFDocumentExtension` at runtime, registers fixture audio events, imports each fixture via `GLTFDocument`, and prints a pass/fail summary to the Output panel.
 

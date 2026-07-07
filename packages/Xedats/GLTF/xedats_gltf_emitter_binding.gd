@@ -1,5 +1,5 @@
 ## Runtime audio emitter node created by [GLTFDocumentExtensionXedatsAudio] for
-## every glTF node that carries a [code]KHR_audio_emitter[/code] extension.
+## every glTF node that carries a [code]XEDATS_audio_emitter[/code] extension.
 ##
 ## Lifecycle:
 ##   1. [method configure] is called during import with the fully-resolved

@@ -4,13 +4,13 @@
     "generator": "Xedats GLTF Fixture"
   },
   "extensionsUsed": [
-    "OMI_audio_material"
+    "XEDATS_audio_material"
   ],
   "nodes": [
     {
       "name": "FixtureOMIAudioMaterialNode",
       "extensions": {
-        "OMI_audio_material": {
+        "XEDATS_audio_material": {
           "absorption": 0.25,
           "transmission": 0.5,
           "reflection": 0.75,

@@ -1,4 +1,4 @@
-## Xedats GLTFDocumentExtension — KHR_audio_emitter + OMI_audio_material importer bridge.
+## Xedats GLTFDocumentExtension — XEDATS_audio_emitter + XEDATS_audio_material importer bridge.
 ##
 ## Registered at editor startup by [XedatsGLTFPlugin].  During a glTF import the
 ## Godot [GLTFDocument] pipeline calls into this extension at each lifecycle
@@ -6,11 +6,11 @@
 ## [constant ERR_SKIP] for everything else so other extensions remain unaffected.
 ##
 ## Supported extensions
-##   • KHR_audio_emitter  — document-level sources/emitters array; node-level
+##   • XEDATS_audio_emitter  — document-level sources/emitters array; node-level
 ##     emitter index.  Resolved into an [XedatsGLTFAudioEmitterBinding] child
 ##     node that fires at runtime via [AudioEventSystem] / [XedatsSingleton] or
 ##     falls back to a plain [AudioStreamPlayer3D].
-##   • OMI_audio_material — node or material-level absorption/transmission/
+##   • XEDATS_audio_material — node or material-level absorption/transmission/
 ##     reflection values.  Converted deterministically into an [EffectChain]
 ##     stored as node metadata and applied to a named Xedats bus.
 ##
@@ -25,8 +25,8 @@
 class_name GLTFDocumentExtensionXedatsAudio
 extends GLTFDocumentExtension
 
-const EXT_KHR_AUDIO_EMITTER: String = "KHR_audio_emitter"
-const EXT_OMI_AUDIO_MATERIAL: String = "OMI_audio_material"
+const EXT_XEDATS_AUDIO_EMITTER: String = "XEDATS_audio_emitter"
+const EXT_XEDATS_AUDIO_MATERIAL: String = "XEDATS_audio_material"
 ## Key used to store the per-import parse cache inside [GLTFState] additional data.
 const DATA_KEY: StringName = &"XedatsGLTFAudioData"
 const DATA_KEY_SUPPRESS_WARNINGS: StringName = &"XedatsGLTFSuppressWarnings"
@@ -67,7 +67,7 @@ var _suppress_warnings: bool = false
 ## Otherwise builds the document-level parse cache (sources, emitters, material
 ## map) and stores it in [param state] additional data under [constant DATA_KEY].
 func _import_preflight(state: GLTFState, extensions: PackedStringArray) -> Error:
-	if not extensions.has(EXT_KHR_AUDIO_EMITTER) and not extensions.has(EXT_OMI_AUDIO_MATERIAL):
+	if not extensions.has(EXT_XEDATS_AUDIO_EMITTER) and not extensions.has(EXT_XEDATS_AUDIO_MATERIAL):
 		return ERR_SKIP
 
 	_warning_rate_limit_seen.clear()
@@ -87,7 +87,7 @@ func _import_preflight(state: GLTFState, extensions: PackedStringArray) -> Error
 ## [b]Lifecycle — Stage 2.[/b]  Declares the extension names this class
 ## handles so that Godot routes the relevant JSON blocks to it.
 func _get_supported_extensions() -> PackedStringArray:
-	return PackedStringArray([EXT_KHR_AUDIO_EMITTER, EXT_OMI_AUDIO_MATERIAL])
+	return PackedStringArray([EXT_XEDATS_AUDIO_EMITTER, EXT_XEDATS_AUDIO_MATERIAL])
 
 
 ## [b]Lifecycle — Stage 3.[/b]  Called for each glTF node that carries
@@ -97,13 +97,13 @@ func _get_supported_extensions() -> PackedStringArray:
 func _parse_node_extensions(_state: GLTFState, gltf_node: GLTFNode, extensions: Dictionary) -> Error:
 	var node_data: Dictionary = {}
 
-	if extensions.has(EXT_KHR_AUDIO_EMITTER):
-		var emitter_ext: Dictionary = extensions[EXT_KHR_AUDIO_EMITTER]
+	if extensions.has(EXT_XEDATS_AUDIO_EMITTER):
+		var emitter_ext: Dictionary = extensions[EXT_XEDATS_AUDIO_EMITTER]
 		if emitter_ext.has("emitter"):
 			node_data["emitter_index"] = int(emitter_ext.get("emitter", -1))
 
-	if extensions.has(EXT_OMI_AUDIO_MATERIAL):
-		var parsed_material: Dictionary = _parse_omi_audio_material(extensions[EXT_OMI_AUDIO_MATERIAL])
+	if extensions.has(EXT_XEDATS_AUDIO_MATERIAL):
+		var parsed_material: Dictionary = _parse_omi_audio_material(extensions[EXT_XEDATS_AUDIO_MATERIAL])
 		if not parsed_material.is_empty():
 			node_data["omi_material"] = parsed_material
 
@@ -146,8 +146,8 @@ func _parse_document_extensions(state: GLTFState, parse_cache: Dictionary) -> vo
 	var state_json: Dictionary = state.json
 	if state_json.has("extensions"):
 		var document_extensions: Dictionary = state_json["extensions"]
-		if document_extensions.has(EXT_KHR_AUDIO_EMITTER):
-			var khr_doc_ext: Dictionary = document_extensions[EXT_KHR_AUDIO_EMITTER]
+		if document_extensions.has(EXT_XEDATS_AUDIO_EMITTER):
+			var khr_doc_ext: Dictionary = document_extensions[EXT_XEDATS_AUDIO_EMITTER]
 			parse_cache["khr_sources"] = _as_dictionary_array(khr_doc_ext.get("sources", []))
 			parse_cache["khr_emitters"] = _as_dictionary_array(khr_doc_ext.get("emitters", []))
 
@@ -160,14 +160,14 @@ func _parse_document_extensions(state: GLTFState, parse_cache: Dictionary) -> vo
 				var material_dict: Dictionary = material_json
 				if material_dict.has("extensions"):
 					var material_extensions: Dictionary = material_dict["extensions"]
-					if material_extensions.has(EXT_OMI_AUDIO_MATERIAL):
-						var parsed_material: Dictionary = _parse_omi_audio_material(material_extensions[EXT_OMI_AUDIO_MATERIAL])
+					if material_extensions.has(EXT_XEDATS_AUDIO_MATERIAL):
+						var parsed_material: Dictionary = _parse_omi_audio_material(material_extensions[EXT_XEDATS_AUDIO_MATERIAL])
 						if not parsed_material.is_empty():
 							parsed_materials[material_index] = parsed_material
 		parse_cache["omi_materials"] = parsed_materials
 
 
-## Builds the runtime payload Dictionary for a KHR_audio_emitter node.[br]
+## Builds the runtime payload Dictionary for a XEDATS_audio_emitter node.[br]
 ## Resolution priority:[br]
 ##   1. Emitter index from [param gltf_node] additional data (set in preflight).[br]
 ##   2. Emitter index from raw [param node_json] extensions block (fallback).[br]
@@ -182,8 +182,8 @@ func _resolve_emitter_payload(state: GLTFState, parse_cache: Dictionary, gltf_no
 
 	if emitter_index < 0 and node_json.has("extensions"):
 		var json_ext: Dictionary = node_json["extensions"]
-		if json_ext.has(EXT_KHR_AUDIO_EMITTER):
-			var emitter_ext: Dictionary = json_ext[EXT_KHR_AUDIO_EMITTER]
+		if json_ext.has(EXT_XEDATS_AUDIO_EMITTER):
+			var emitter_ext: Dictionary = json_ext[EXT_XEDATS_AUDIO_EMITTER]
 			emitter_index = int(emitter_ext.get("emitter", -1))
 
 	if emitter_index < 0:
@@ -282,7 +282,7 @@ func _resolve_precomputed_propagation_payload(validated_extras: Dictionary, emit
 	if resolution_key.is_empty():
 		return {}
 
-	var context: String = "KHR_audio_emitter[%d] extras" % emitter_index
+	var context: String = "XEDATS_audio_emitter[%d] extras" % emitter_index
 	var lookup_key: String = "xedats_precomputed_id"
 	var lookup_value: Variant = precomputed_id
 	if precomputed_id.is_empty():
@@ -338,7 +338,7 @@ func _get_precomputed_propagation_resolver() -> Script:
 	return resolver_script
 
 
-## Resolves an OMI_audio_material payload for [param gltf_node].[br]
+## Resolves an XEDATS_audio_material payload for [param gltf_node].[br]
 ## Checks in order:[br]
 ##   1. Per-node additional data written during [method _parse_node_extensions].[br]
 ##   2. Material index referenced by the node's mesh primitives (for materials
@@ -396,7 +396,7 @@ func _resolve_material_payload(parse_cache: Dictionary, gltf_node: GLTFNode, nod
 ## not a [Node3D] since spatial audio requires a world transform.
 func _attach_emitter_binding(node: Node, payload: Dictionary) -> void:
 	if not (node is Node3D):
-		push_warning("Xedats glTF: KHR_audio_emitter node '%s' is not Node3D; skipping emitter binding" % node.name)
+		push_warning("Xedats glTF: XEDATS_audio_emitter node '%s' is not Node3D; skipping emitter binding" % node.name)
 		return
 
 	node.set_meta(&"xedats_khr_audio_emitter", payload)
@@ -494,7 +494,7 @@ func _get_omi_effect_mapping_profile() -> Resource:
 	return null
 
 
-## Parses a raw OMI_audio_material extension block into a normalized Dictionary
+## Parses a raw XEDATS_audio_material extension block into a normalized Dictionary
 ## with float fields [code]absorption[/code], [code]transmission[/code],
 ## [code]reflection[/code] (all clamped 0–1), plus optional [code]category[/code]
 ## and [code]bus_name[/code] sourced from the [code]extras[/code] block using
@@ -519,7 +519,7 @@ func _parse_omi_audio_material(raw_material: Variant) -> Dictionary:
 					"xedats_category",
 					extras_dict.get("xedats_category", ""),
 					"",
-					"OMI_audio_material extras"
+					"XEDATS_audio_material extras"
 				)
 				if not category.is_empty():
 					parsed["category"] = category
@@ -528,7 +528,7 @@ func _parse_omi_audio_material(raw_material: Variant) -> Dictionary:
 					"xedats_bus",
 					extras_dict.get("xedats_bus", ""),
 					"",
-					"OMI_audio_material extras"
+					"XEDATS_audio_material extras"
 				)
 				if not bus_name.is_empty():
 					parsed["bus_name"] = bus_name
@@ -544,12 +544,12 @@ func _parse_xedats_emitter_extras(emitter_data: Dictionary, emitter_index: int) 
 	var extras: Dictionary = _validate_optional_object(
 		"extras",
 		extras_variant,
-		"KHR_audio_emitter[%d]" % emitter_index
+		"XEDATS_audio_emitter[%d]" % emitter_index
 	)
 	if extras.is_empty():
 		return {}
 
-	var context: String = "KHR_audio_emitter[%d] extras" % emitter_index
+	var context: String = "XEDATS_audio_emitter[%d] extras" % emitter_index
 	var normalized: Dictionary = {}
 	var present_known_keys: PackedStringArray = PackedStringArray()
 	var present_unknown_keys: PackedStringArray = PackedStringArray()

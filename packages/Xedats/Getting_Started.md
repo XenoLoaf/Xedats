@@ -24,8 +24,8 @@ This document covers the most common setups you will encounter. It will grow alo
 
 ## 1. Accessing the System
 
-Xedats is accessed through its singleton. Always null-check before using it so your object
-degrades gracefully if the system is absent (e.g., in unit tests or stripped builds).
+Xedats is accessed through its singleton. Always null-check before using it so your code
+fails gracefully if the system is absent (e.g., in unit tests or stripped builds).
 
 ```gdscript
 var audio: XedatsSingleton = XedatsSingleton.instance()
@@ -402,8 +402,8 @@ player.audio_category = "SFX"
 ```
 
 ### Use pitch variance on all world-object sounds
-A small asymmetric range (e.g. `randf_range(-0.06, 0.04)`) gives sounds a slightly
-organic feel without being perceptibly "wrong".
+A small asymmetric range (e.g. `randf_range(-0.06, 0.04)`) gives sounds natural
+variation without being perceptible.
 
 ### Keep interaction sounds short (< 1.5 s for SFX)
 Short clips are less likely to overlap awkwardly when the player triggers the same
@@ -447,7 +447,7 @@ Xedats GLTF emitter bindings use a bounded poll (every 0.1 s) as a fallback to s
 in sync with a portal source (e.g., a door). If that source also emits signals, the
 binding connects to them immediately — bypassing the poll entirely for state changes.
 
-Project Helix interactables expose the following signals for this purpose:
+Interactable objects commonly expose the following signals for portal auto-bind:
 
 | Signal | When emitted | Connected handler behaviour |
 |---|---|---|
@@ -506,7 +506,7 @@ does not expose a readable portal state.
 
 ## 12. Bus Routing and Hot-Swap
 
-Xedats supports category-driven bus routing and runtime bus swaps so designers can keep
+Xedats supports category-driven bus routing and runtime bus swaps. Designers can keep
 simple category workflows while still moving individual sounds between base and effect lanes.
 
 ### 12a. Route by category (base or effect lane)

@@ -6,7 +6,6 @@ Standalone home for the Xedats runtime package and its optional Xedats-specific 
 
 - `packages/Xedats` - standalone Xedats runtime package with internal singleton bootstrapping
 - `packages/XedatsConsoleModule` - optional Xedats-specific command bridge for a compatible host console
-- `docs/package-matrix.md` - package overview and suggested ways to use the repository
 
 ## Notes
 

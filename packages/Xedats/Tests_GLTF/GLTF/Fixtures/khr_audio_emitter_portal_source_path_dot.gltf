@@ -4,10 +4,10 @@
     "generator": "Xedats GLTF Fixture"
   },
   "extensionsUsed": [
-    "KHR_audio_emitter"
+    "XEDATS_audio_emitter"
   ],
   "extensions": {
-    "KHR_audio_emitter": {
+    "XEDATS_audio_emitter": {
       "sources": [
         {
           "uri": "../../../../Sound/Test_/Other/door_unlock_sfx.wav"
@@ -37,7 +37,7 @@
     {
       "name": "FixturePortalSourcePathDotEmitter",
       "extensions": {
-        "KHR_audio_emitter": {
+        "XEDATS_audio_emitter": {
           "emitter": 0
         }
       }

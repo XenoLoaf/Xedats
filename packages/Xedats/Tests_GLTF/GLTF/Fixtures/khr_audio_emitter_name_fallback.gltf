@@ -4,10 +4,10 @@
     "generator": "Xedats GLTF Fixture"
   },
   "extensionsUsed": [
-    "KHR_audio_emitter"
+    "XEDATS_audio_emitter"
   ],
   "extensions": {
-    "KHR_audio_emitter": {
+    "XEDATS_audio_emitter": {
       "sources": [
         {
           "uri": "../../../../Sound/Test_/Other/close_gate_sfx.wav"
@@ -30,7 +30,7 @@
     {
       "name": "FixtureNameFallbackEmitter",
       "extensions": {
-        "KHR_audio_emitter": {
+        "XEDATS_audio_emitter": {
           "emitter": 0
         }
       }

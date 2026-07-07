@@ -68,9 +68,11 @@ Call `XedatsSingleton.instance()` when you want the runtime to initialize. The s
 
 ## glTF Audio Import (Beta)
 
-Xedats now includes a `GLTFDocumentExtension` bridge for glTF audio metadata:
-- `KHR_audio_emitter` maps to Xedats event/clip playback where possible.
-- `OMI_audio_material` maps to deterministic `EffectChain` generation and node metadata.
+> **Note:** Xedats glTF audio extensions are original implementations using the `XEDATS_` vendor prefix. They are not implementations of any Khronos or OMI specification. See `THIRDPARTY_NOTICES.md` for details.
+
+Xedats includes a `GLTFDocumentExtension` bridge for glTF audio metadata:
+- `XEDATS_audio_emitter` maps to Xedats event/clip playback where possible.
+- `XEDATS_audio_material` maps to deterministic `EffectChain` generation and node metadata.
 
 To enable importer registration in the editor:
 1. Enable plugin: `res://addons/xedats_gltf/plugin.cfg`.

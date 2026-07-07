@@ -4,7 +4,7 @@ This subfolder contains the glTF audio import extension. It is **fully optional*
 
 ## What it provides
 
-- `GLTFDocumentExtensionXedatsAudio` — glTF import pipeline hook for KHR_audio_emitter and OMI_audio_material extensions
+- `GLTFDocumentExtensionXedatsAudio` — glTF import pipeline hook for XEDATS_audio_emitter and XEDATS_audio_material extensions
 - `XedatsGLTFAudioEmitterBinding` — runtime binding node for imported audio emitters
 - `XedatsDynamicApproximationService` — runtime spatial approximation management
 - Profile resources for distance bands, reflection budgets, OMI effect mapping, precomputed propagation
