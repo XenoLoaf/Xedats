@@ -1,8 +1,8 @@
 # Xedats glTF Fixture Tests
 
-Open and run `res://ProjectHelix/Xedats/Tests/GLTF/xedats_gltf_fixture_runner.tscn` to validate the current Xedats glTF importer path.
+Open and run `res://MyProject/Xedats/Tests/GLTF/xedats_gltf_fixture_runner.tscn` to validate the current Xedats glTF importer path.
 
-The runner's internal fixture/audio lookups are derived from `XedatsGLTFConfig.XEDATS_ROOT`, so moving the Xedats module to a different `res://` location normally only requires updating `res://ProjectHelix/Xedats/Modules/GLTF/xedats_gltf_config.gd`.
+The runner's internal fixture/audio lookups are derived from `XedatsGLTFConfig.XEDATS_ROOT`, so moving the Xedats module to a different `res://` location normally only requires updating `res://MyProject/Xedats/Modules/GLTF/xedats_gltf_config.gd`.
 
 Runner lifecycle:
 - Registers `GLTFDocumentExtensionXedatsAudio` at runtime.

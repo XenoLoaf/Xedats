@@ -23,10 +23,10 @@ Both extensions are handled by a single `GLTFDocumentExtension` registered by th
 Project-specific Xedats pathing for the glTF module is centralized in `XedatsGLTFConfig`:
 
 ```gdscript
-static var XEDATS_ROOT: String = "res://ProjectHelix/Xedats"
+static var XEDATS_ROOT: String = "res://MyProject/Xedats"
 ```
 
-File: `res://ProjectHelix/Xedats/GLTF/xedats_gltf_config.gd`
+File: `res://MyProject/Xedats/GLTF/xedats_gltf_config.gd`
 
 This is the single path you change when the Xedats module lives somewhere else in a different project. Runtime/resource lookups in the importer and fixture runner are derived from this root through helpers such as:
 
@@ -88,7 +88,7 @@ When Godot imports a glTF that contains `XEDATS_audio_emitter` the importer crea
         {
           "uri": "../../../../Sound/Doors/open_gate_sfx.wav",
           "extras": {
-            "xedats_path": "res://ProjectHelix/Sound/Doors/open_gate_sfx.wav"
+            "xedats_path": "res://MyProject/Sound/Doors/open_gate_sfx.wav"
           }
         }
       ],
@@ -127,7 +127,7 @@ The importer resolves clip URIs in this order:
 If you want authored fixtures or third-party glTF content to remain portable across projects, prefer relative `uri` values where practical and reserve `extras.xedats_path` for explicit project-local overrides.
 
 **Depth example:**  
-A fixture at `res://ProjectHelix/Xedats/Tests/GLTF/Fixtures/my.gltf` that references a clip at `res://ProjectHelix/Sound/clip.wav` needs four levels up:
+A fixture at `res://MyProject/Xedats/Tests/GLTF/Fixtures/my.gltf` that references a clip at `res://MyProject/Sound/clip.wav` needs four levels up:
 
 ```jsonc
 "uri": "../../../../Sound/clip.wav"
@@ -228,7 +228,7 @@ The binding builds an `AudioArrayContainer` with `RANDOM_NO_REPEAT` playback mod
 
 Current MVP behavior:
 - Source candidates are salience-ranked deterministically.
-- A max source cap is read from `res://ProjectHelix/Xedats/Resources/GLTF/xedats_reflection_budget_profile_default.tres`.
+- A max source cap is read from `res://MyProject/Xedats/Resources/GLTF/xedats_reflection_budget_profile_default.tres`.
 - `source_paths` are capped to that tier budget for emitter playback.
 - Invalid tier values warn and fallback to `medium`.
 
@@ -288,7 +288,7 @@ Multi-source texture emitters can optionally have their volume range further scu
 
 #### How it works
 
-When `xedats_distance_policy = "texture"`, the binding node samples the straight-line world-space distance from the emitter to the active listener at `_ready` time. The active distance band is determined by the **distance band profile** at `res://ProjectHelix/Xedats/Resources/GLTF/xedats_distance_band_profile_default.tres`.
+When `xedats_distance_policy = "texture"`, the binding node samples the straight-line world-space distance from the emitter to the active listener at `_ready` time. The active distance band is determined by the **distance band profile** at `res://MyProject/Xedats/Resources/GLTF/xedats_distance_band_profile_default.tres`.
 
 The center gain computed from texture density/variance is then scaled by the band's `gain_scale`:
 
@@ -385,7 +385,7 @@ Emitters can opt into authored propagation hints using either a direct precomput
 The importer resolves profiles from:
 
 ```text
-res://ProjectHelix/Xedats/Resources/GLTF/PrecomputedPropagation/<key>.tres
+res://MyProject/Xedats/Resources/GLTF/PrecomputedPropagation/<key>.tres
 ```
 
 Lookup order:
@@ -615,9 +615,9 @@ Import always succeeds (returns `OK`). Missing-service and missing-stream paths 
 
 The fixture runner validates the full import pipeline headlessly and is the recommended smoke-test after any change to the importer.
 
-The runner script derives its fixture and test-audio paths from `XedatsGLTFConfig` rather than hardcoded `res://ProjectHelix/Xedats/...` constants. That means the fixture harness follows the configured Xedats root automatically once `XEDATS_ROOT` is updated.
+The runner script derives its fixture and test-audio paths from `XedatsGLTFConfig` rather than hardcoded `res://MyProject/Xedats/...` constants. That means the fixture harness follows the configured Xedats root automatically once `XEDATS_ROOT` is updated.
 
-Runtime file: `res://ProjectHelix/Xedats/Tests/GLTF/xedats_gltf_fixture_runner.gd`
+Runtime file: `res://MyProject/Xedats/Tests/GLTF/xedats_gltf_fixture_runner.gd`
 
 The runner performs these steps:
 
@@ -627,13 +627,13 @@ The runner performs these steps:
 4. Validates payload metadata, playback routing, and material/effect mapping.
 5. Unregisters temporary events and frees generated scenes during teardown.
 
-**In-editor:** Open `res://ProjectHelix/Xedats/Tests/GLTF/xedats_gltf_fixture_runner.tscn` and run the scene.
+**In-editor:** Open `res://MyProject/Xedats/Tests/GLTF/xedats_gltf_fixture_runner.tscn` and run the scene.
 
 **Headless (CI):**
 ```powershell
 & "j:\Godot_Install\Godot_v4.7-stable_mono_win64\Godot_v4.7-stable_mono_win64_console.exe" `
-    --headless --path "j:\Godot_Projects\ProjectHelix\MainProject" `
-    "res://ProjectHelix/Xedats/Tests/GLTF/xedats_gltf_fixture_runner.tscn"
+    --headless --path "j:\Godot_Projects\MyProject" `
+    "res://MyProject/Xedats/Tests/GLTF/xedats_gltf_fixture_runner.tscn"
 ```
 
 Exit code `0` = all assertions passed.  

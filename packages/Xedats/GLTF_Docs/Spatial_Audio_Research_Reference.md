@@ -2,7 +2,7 @@
 
 This page summarizes the bibliography files in the external research folder and translates each paper into actionable guidance for the Xedats + glTF audio pipeline.
 
-Source bibliography folder: `j:\Godot_Projects\ProjectHelix\Godot Spatial Audio Resources\PDFs`
+Source bibliography folder: `j:\Godot_Projects\MyProject\Godot Spatial Audio Resources\PDFs`
 
 ## Why this page exists
 

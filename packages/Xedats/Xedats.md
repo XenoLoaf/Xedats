@@ -4,7 +4,7 @@
 > Covers common object/interaction audio setup, exported variable patterns, and good practices.
 >
 > **Planning interactable audio expansion?** See **[Interactable_Audio_Requirements.md](Interactable_Audio_Requirements.md)**
-> for the Project Helix interactable spectrum, extracted requirements, and the cue/profile implementation plan.
+> for the interactable audio spectrum, extracted requirements, and the cue/profile implementation plan.
 
 ## Overview
 
