@@ -88,6 +88,10 @@ static func instance() -> AudioEventSystem:
 		return xedats.get_event_system()
 	return null
 
+
+static func peek_instance() -> AudioEventSystem:
+	return instance()
+
 #endregion
 
 # Audio event structure

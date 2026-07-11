@@ -65,6 +65,10 @@ static func instance() -> AudioCrossfade:
 		return xedats.get_crossfade_system()
 	return null
 
+
+static func peek_instance() -> AudioCrossfade:
+	return instance()
+
 #endregion
 
 class CrossfadeInfo:

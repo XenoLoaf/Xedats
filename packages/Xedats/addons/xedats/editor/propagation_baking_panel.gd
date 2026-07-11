@@ -56,13 +56,13 @@ func _build_ui() -> void:
 	add_theme_constant_override("separation", 4)
 
 	# ── Header ──────────────────────────────────────────────────────
-	var header := Label.new()
+	var header: Label = Label.new()
 	header.text = "Propagation Profile Baker"
 	header.add_theme_font_size_override("font_size", 14)
 	add_child(header)
 
 	# ── Directory bar ────────────────────────────────────────────────
-	var dir_hbox := HBoxContainer.new()
+	var dir_hbox: HBoxContainer = HBoxContainer.new()
 	add_child(dir_hbox)
 
 	_dir_label = Label.new()
@@ -76,28 +76,28 @@ func _build_ui() -> void:
 	_dir_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	dir_hbox.add_child(_dir_edit)
 
-	var browse_btn := Button.new()
+	var browse_btn: Button = Button.new()
 	browse_btn.text = "..."
 	browse_btn.tooltip_text = "Browse profile directory"
 	browse_btn.pressed.connect(_on_browse)
 	dir_hbox.add_child(browse_btn)
 
-	var refresh_btn := Button.new()
+	var refresh_btn: Button = Button.new()
 	refresh_btn.text = "Refresh"
 	refresh_btn.pressed.connect(_refresh_list)
 	dir_hbox.add_child(refresh_btn)
 
 	# ── Body: split profile list + detail ────────────────────────────
-	var split := HSplitContainer.new()
+	var split: HSplitContainer = HSplitContainer.new()
 	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(split)
 
 	# Left: profile list
-	var left_vbox := VBoxContainer.new()
+	var left_vbox: VBoxContainer = VBoxContainer.new()
 	left_vbox.custom_minimum_size.x = 140
 	split.add_child(left_vbox)
 
-	var list_header := Label.new()
+	var list_header: Label = Label.new()
 	list_header.text = "Profiles"
 	left_vbox.add_child(list_header)
 
@@ -107,21 +107,21 @@ func _build_ui() -> void:
 	_file_list.nothing_selected.connect(_on_nothing_selected)
 	left_vbox.add_child(_file_list)
 
-	var list_btn_hbox := HBoxContainer.new()
+	var list_btn_hbox: HBoxContainer = HBoxContainer.new()
 	left_vbox.add_child(list_btn_hbox)
 
-	var new_btn := Button.new()
+	var new_btn: Button = Button.new()
 	new_btn.text = "Create New"
 	new_btn.pressed.connect(_on_create_new)
 	list_btn_hbox.add_child(new_btn)
 
-	var delete_btn := Button.new()
+	var delete_btn: Button = Button.new()
 	delete_btn.text = "Delete"
 	delete_btn.pressed.connect(_on_delete)
 	list_btn_hbox.add_child(delete_btn)
 
 	# Right: detail form (scrollable)
-	var scroll := ScrollContainer.new()
+	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	split.add_child(scroll)
@@ -143,7 +143,7 @@ func _build_ui() -> void:
 
 func _build_detail_form() -> void:
 	# ── Identity ────────────────────────────────────────────────────
-	var id_header := Label.new()
+	var id_header: Label = Label.new()
 	id_header.text = "Identity"
 	id_header.add_theme_font_size_override("font_size", 12)
 	id_header.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
@@ -164,14 +164,14 @@ func _build_detail_form() -> void:
 
 	# ── Gain ─────────────────────────────────────────────────────────
 	_detail_container.add_child(_section_gap())
-	var gain_header := Label.new()
+	var gain_header: Label = Label.new()
 	gain_header.text = "Gain"
 	gain_header.add_theme_font_size_override("font_size", 12)
 	gain_header.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
 	_detail_container.add_child(gain_header)
 	_detail_container.add_child(_hr())
 
-	var gain_hbox := HBoxContainer.new()
+	var gain_hbox: HBoxContainer = HBoxContainer.new()
 	_gain_mult_label = Label.new()
 	_gain_mult_label.text = "1.00"
 	_gain_mult_label.custom_minimum_size.x = 36
@@ -187,7 +187,7 @@ func _build_detail_form() -> void:
 
 	# ── Occlusion ────────────────────────────────────────────────────
 	_detail_container.add_child(_section_gap())
-	var occ_header := Label.new()
+	var occ_header: Label = Label.new()
 	occ_header.text = "Occlusion"
 	occ_header.add_theme_font_size_override("font_size", 12)
 	occ_header.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
@@ -204,7 +204,7 @@ func _build_detail_form() -> void:
 	_enable_occ_cb.disabled = true
 	_detail_container.add_child(_enable_occ_cb)
 
-	var occ_int_hbox := HBoxContainer.new()
+	var occ_int_hbox: HBoxContainer = HBoxContainer.new()
 	_occ_intensity_label = Label.new()
 	_occ_intensity_label.text = "0.50"
 	_occ_intensity_label.custom_minimum_size.x = 36
@@ -220,7 +220,7 @@ func _build_detail_form() -> void:
 
 	# ── Distance Filtering ───────────────────────────────────────────
 	_detail_container.add_child(_section_gap())
-	var df_header := Label.new()
+	var df_header: Label = Label.new()
 	df_header.text = "Distance Filtering"
 	df_header.add_theme_font_size_override("font_size", 12)
 	df_header.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
@@ -239,7 +239,7 @@ func _build_detail_form() -> void:
 
 	# ── Audio Filters ────────────────────────────────────────────────
 	_detail_container.add_child(_section_gap())
-	var filter_header := Label.new()
+	var filter_header: Label = Label.new()
 	filter_header.text = "Audio Filters"
 	filter_header.add_theme_font_size_override("font_size", 12)
 	filter_header.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
@@ -264,14 +264,14 @@ func _build_detail_form() -> void:
 
 	# ── Reverb ───────────────────────────────────────────────────────
 	_detail_container.add_child(_section_gap())
-	var reverb_header := Label.new()
+	var reverb_header: Label = Label.new()
 	reverb_header.text = "Reverb"
 	reverb_header.add_theme_font_size_override("font_size", 12)
 	reverb_header.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
 	_detail_container.add_child(reverb_header)
 	_detail_container.add_child(_hr())
 
-	var rw_hbox := HBoxContainer.new()
+	var rw_hbox: HBoxContainer = HBoxContainer.new()
 	_reverb_wet_label = Label.new()
 	_reverb_wet_label.text = "-1.0"
 	_reverb_wet_label.custom_minimum_size.x = 36
@@ -285,7 +285,7 @@ func _build_detail_form() -> void:
 	rw_hbox.add_child(_reverb_wet_label)
 	_detail_container.add_child(rw_hbox)
 
-	var rr_hbox := HBoxContainer.new()
+	var rr_hbox: HBoxContainer = HBoxContainer.new()
 	_reverb_room_label = Label.new()
 	_reverb_room_label.text = "-1.0"
 	_reverb_room_label.custom_minimum_size.x = 36
@@ -301,7 +301,7 @@ func _build_detail_form() -> void:
 
 	# ── Bus ──────────────────────────────────────────────────────────
 	_detail_container.add_child(_section_gap())
-	var bus_header := Label.new()
+	var bus_header: Label = Label.new()
 	bus_header.text = "Routing"
 	bus_header.add_theme_font_size_override("font_size", 12)
 	bus_header.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
@@ -323,9 +323,9 @@ func _build_detail_form() -> void:
 
 
 func _labeled(text: String, control: Control) -> VBoxContainer:
-	var vbox := VBoxContainer.new()
+	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 1)
-	var label := Label.new()
+	var label: Label = Label.new()
 	label.text = text
 	label.add_theme_font_size_override("font_size", 10)
 	label.add_theme_color_override("font_color", Color(0.65, 0.65, 0.7))
@@ -335,13 +335,13 @@ func _labeled(text: String, control: Control) -> VBoxContainer:
 
 
 func _hr() -> HSeparator:
-	var sep := HSeparator.new()
+	var sep: HSeparator = HSeparator.new()
 	sep.add_theme_color_override("color", Color(0.3, 0.3, 0.35, 0.4))
 	return sep
 
 
 func _section_gap() -> Control:
-	var gap := Control.new()
+	var gap: Control = Control.new()
 	gap.custom_minimum_size = Vector2(0, 6)
 	return gap
 

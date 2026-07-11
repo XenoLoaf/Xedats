@@ -77,6 +77,10 @@ static func instance() -> AudioStateManager:
 		return xedats.get_state_manager()
 	return null
 
+
+static func peek_instance() -> AudioStateManager:
+	return instance()
+
 #endregion
 
 ## @const CONFIG_DIR

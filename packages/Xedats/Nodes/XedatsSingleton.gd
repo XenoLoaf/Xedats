@@ -1135,7 +1135,9 @@ func get_performance_history() -> Array:
 ## Only available when [member enable_performance_monitoring] is [code]true[/code].
 func print_performance_report() -> void:
 	var metrics: Dictionary = get_performance_metrics()
-	
+	if not enable_debug_logging:
+		return
+
 	print("\n========== XEDATS PERFORMANCE REPORT ==========")
 	print("Active 3D Players: %d / %d" % [metrics["active_players"], metrics["max_simultaneous_sounds"]])
 	print("Pooled 3D Players: %d (Pool Fill: %.1f%%)" % [metrics["pooled_players"], metrics["available_capacity_percent"]])

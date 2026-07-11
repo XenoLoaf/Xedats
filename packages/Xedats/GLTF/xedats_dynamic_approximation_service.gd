@@ -195,6 +195,10 @@ static func instance() -> XedatsDynamicApproximationService:
 	return ref as XedatsDynamicApproximationService
 
 
+static func peek_instance() -> XedatsDynamicApproximationService:
+	return instance()
+
+
 ## Returns the live instance if one exists; otherwise creates a new service node
 ## and adds it to the scene tree root accessible from [param anchor_node].
 ##
