@@ -1,9 +1,9 @@
-# Xedats
+# Xedats — XenoLoaf's Dynamic Audio Tool System
 
 [![Godot](https://img.shields.io/badge/Godot-4.7-478cbf?logo=godot-engine&logoColor=white)](https://godotengine.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
-**Xedats** is a standalone, zero-dependency 3D/2D audio system plugin for Godot 4.7+. It provides object pooling, spatial audio, named event dispatch, bus routing, audio persistence, crossfading, MIDI playback, and a glTF audio import bridge — no autoloads, no external packages required.
+**Xedats** (**Xe**noLoaf's **D**ynamic **A**udio **T**ool **S**ystem) is a standalone, zero-dependency 3D/2D audio system plugin for Godot 4.7+. It provides object pooling, spatial audio, named event dispatch, bus routing, audio persistence, crossfading, MIDI playback, and a glTF audio import bridge — no autoloads, no external packages required.
 
 ---
 
