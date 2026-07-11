@@ -1,0 +1,8 @@
+# Godot editor data
+.godot/
+.import/
+*.uid
+
+# OS files
+Thumbs.db
+.DS_Store
