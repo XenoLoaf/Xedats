@@ -7,6 +7,10 @@ test-environment/
 # Mono/C# build output
 .mono/
 
+# Internal dev files (not for public distribution)
+WORKFLOW.md
+packages/Xedats/Tools_Xebug/
+
 # OS files
 Thumbs.db
 .DS_Store

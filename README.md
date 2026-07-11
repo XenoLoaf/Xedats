@@ -69,9 +69,10 @@ Xedats ships as a single package, but several components are optional and can be
 | **Editor plugin** | `packages/Xedats/addons/xedats/` | Inspector preview for distance band profiles, propagation profile baker dock | Yes — editor-only, not needed at runtime |
 | **Console module** | `packages/XedatsConsoleModule/` | Command bridge (`audio list_buses`, `audio inspect_player`, etc.) for [Xebug](https://github.com/XenoLoaf/Xebug) or compatible console hosts | Yes — separate optional package |
 | **GLTF module** | `packages/Xedats/GLTF/` | `GLTFDocumentExtension` bridge for importing audio metadata from glTF files | Yes — safe to delete if you don't use glTF audio import |
+| **GLTF Tests** | `packages/Xedats/Tests_GLTF/` | Headless fixture tests for the glTF import pipeline (25+ fixtures) | Yes — only needed if validating the GLTF importer |
 | **GLTF Docs** | `packages/Xedats/GLTF_Docs/` | Authoring guides and research references for the glTF audio module | Yes — documentation only |
-| **Tests** | `packages/Xedats/Tests_GLTF/` | Headless fixture tests for the glTF import pipeline | Yes — safe to omit in shipped builds |
 | **MIDI module** | `packages/Xedats/MIDI/` | MIDI parser, sequencer, note map, hardware input, stinger/layering/gate effects | Yes — delete the `MIDI/` folder if unused |
+| **Xebug companion modules** | `xebug-modules` branch | Pool monitor, bus inspector, event monitor, runtime validator for [Xebug](https://github.com/XenoLoaf/Xebug) | Yes — separate branch, not on `main` |
 
 ### Enabling the Editor Plugin
 
@@ -89,11 +90,14 @@ add_child(bridge)
 ```
 The module auto-registers `audio`, `xd.panel`, `xd.overlay`, `xd.trace`, `xd.status`, `xd.refresh`, and `xd.feed` commands.
 
+Xebug companion modules (pool monitor, bus inspector, event monitor, runtime validator) are available on the **[`xebug-modules`](../../tree/xebug-modules)** branch.
+
 ### Enabling glTF Audio Import
 
 1. Ensure `packages/Xedats/GLTF/` and `packages/Xedats/GLTF/Profiles/` are present.
 2. Enable plugin: `res://addons/xedats_gltf/plugin.cfg` in **Project Settings → Plugins**.
 3. See **[GLTF_Docs/Setup_GLTF_Audio_Surfaces.md](packages/Xedats/GLTF_Docs/Setup_GLTF_Audio_Surfaces.md)** for full authoring guidance.
+4. The `Tests_GLTF/` folder contains fixture-based import validation tests — safe to omit in shipped builds.
 
 ---
 
