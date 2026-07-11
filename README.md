@@ -103,7 +103,7 @@ Xebug companion modules (pool monitor, bus inspector, event monitor, runtime val
 
 ## Project Bundle
 
-~~A pre-bundled setup with the wider XenoLoaf Tool Suite (Xedats + Xebug + AutoloadManager + GameEnvironment) pre-wired together is planned.~~ *Work in progress — not yet available.*
+~~A pre-bundled setup with the wider XenoLoaf Tool Suite (Xedats + Xebug + AutoloadManager) pre-wired together is planned.~~ *Work in progress — not yet available.*
 
 ---
 
