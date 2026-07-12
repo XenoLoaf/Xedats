@@ -18,7 +18,7 @@ static var FIXTURE_OMI_MATERIAL_EXTREMES: String = XedatsGLTFConfig.fixtures_roo
 static var FIXTURE_OMI_MATERIAL_INDEX: String = XedatsGLTFConfig.fixtures_root() + "/omi_audio_material_material_index.gltf"
 static var FIXTURE_OMI_MATERIAL_PRECEDENCE: String = XedatsGLTFConfig.fixtures_root() + "/omi_audio_material_precedence.gltf"
 static var FIXTURE_OMI_MATERIAL_DEFAULT_BUS: String = XedatsGLTFConfig.fixtures_root() + "/omi_audio_material_default_bus.gltf"
-const PORTAL_STATE_STUB_SCRIPT: Script = preload("res://ProjectHelix/Xedats/Tests/GLTF/fixture_portal_state_stub.gd")
+const PORTAL_STATE_STUB_SCRIPT: Script = preload("res://addons/xedats/Tests_GLTF/GLTF/fixture_portal_state_stub.gd")
 # Expected volume_variation for texture modulation fixture:
 # gain=1.0, density=0.5 -> center=0.75; variance=0.4, max_spread=0.25 -> half=0.1
 const EXPECTED_TEXTURE_VOL_MIN: float = 0.65

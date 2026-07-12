@@ -9,7 +9,6 @@ test-environment/
 
 # Internal dev files (not for public distribution)
 WORKFLOW.md
-packages/Xedats/Tools_Xebug/
 
 # OS files
 Thumbs.db

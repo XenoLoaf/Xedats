@@ -32,7 +32,7 @@ static var _cached_root: String = ""
 static func _detect_xedats_root() -> String:
 	if ResourceLoader.exists("res://addons/xedats/plugin.cfg"):
 		return "res://addons/xedats"
-	return "res://ProjectHelix/Xedats"
+	return "res://addons/xedats"
 
 
 static func modules_root() -> String:

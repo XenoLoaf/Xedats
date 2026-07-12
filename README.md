@@ -25,7 +25,7 @@
 
 ## Installation
 
-1. Copy `packages/Xedats/` into your project's `addons/xedats/` directory.
+1. Copy `addons/xedats/` into your project (or install from the Godot Asset Library).
 2. Access the singleton from any script:
 
 ```gdscript
@@ -55,8 +55,8 @@ audio.get_event_system().register_event("player_jump", jump_stream, 0.8, 1.0, "S
 audio.trigger_audio_event("player_jump", global_position)
 ```
 
-Full API reference: **[packages/Xedats/Xedats.md](packages/Xedats/Xedats.md)**  
-Getting started guide: **[packages/Xedats/Getting_Started.md](packages/Xedats/Getting_Started.md)**
+Full API reference: **[addons/xedats/Xedats.md](addons/xedats/Xedats.md)**  
+Getting started guide: **[addons/xedats/Getting_Started.md](addons/xedats/Getting_Started.md)**
 
 ---
 
@@ -66,17 +66,17 @@ Xedats ships as a single package, but several components are optional and can be
 
 | Component | Location | Purpose | Removable? |
 |-----------|----------|---------|------------|
-| **Editor plugin** | `packages/Xedats/addons/xedats/` | Inspector preview for distance band profiles, propagation profile baker dock | Yes — editor-only, not needed at runtime |
+| **Editor plugin** | `addons/xedats/editor/` | Inspector preview for distance band profiles, propagation profile baker dock | Yes — editor-only, not needed at runtime |
 | **Console module** | `packages/XedatsConsoleModule/` | Command bridge (`audio list_buses`, `audio inspect_player`, etc.) for [Xebug](https://github.com/XenoLoaf/Xebug) or compatible console hosts | Yes — separate optional package |
-| **GLTF module** | `packages/Xedats/GLTF/` | `GLTFDocumentExtension` bridge for importing audio metadata from glTF files | Yes — safe to delete if you don't use glTF audio import |
-| **GLTF Tests** | `packages/Xedats/Tests_GLTF/` | Headless fixture tests for the glTF import pipeline (25+ fixtures) | Yes — only needed if validating the GLTF importer |
-| **GLTF Docs** | `packages/Xedats/GLTF_Docs/` | Authoring guides and research references for the glTF audio module | Yes — documentation only |
-| **MIDI module** | `packages/Xedats/MIDI/` | MIDI parser, sequencer, note map, hardware input, stinger/layering/gate effects | Yes — delete the `MIDI/` folder if unused |
+| **GLTF module** | `addons/xedats/GLTF/` | `GLTFDocumentExtension` bridge for importing audio metadata from glTF files | Yes — safe to delete if you don't use glTF audio import |
+| **GLTF Tests** | `addons/xedats/Tests_GLTF/` | Headless fixture tests for the glTF import pipeline (25+ fixtures) | Yes — only needed if validating the GLTF importer |
+| **GLTF Docs** | `addons/xedats/GLTF_Docs/` | Authoring guides and research references for the glTF audio module | Yes — documentation only |
+| **MIDI module** | `addons/xedats/MIDI/` | MIDI parser, sequencer, note map, hardware input, stinger/layering/gate effects | Yes — delete the `MIDI/` folder if unused |
 | **Xebug companion modules** | `xebug-modules` branch | Pool monitor, bus inspector, event monitor, runtime validator for [Xebug](https://github.com/XenoLoaf/Xebug) | Yes — separate branch, not on `main` |
 
 ### Enabling the Editor Plugin
 
-1. Ensure `packages/Xedats/addons/xedats/plugin.cfg` exists in your project.
+1. Ensure `addons/xedats/plugin.cfg` exists in your project.
 2. Go to **Project Settings → Plugins** and enable **Xedats Distance Band Editor**.
 3. The Propagation Baker dock appears in the right panel (drag to reposition).
 
@@ -94,9 +94,9 @@ Xebug companion modules (pool monitor, bus inspector, event monitor, runtime val
 
 ### Enabling glTF Audio Import
 
-1. Ensure `packages/Xedats/GLTF/` and `packages/Xedats/GLTF/Profiles/` are present.
+1. Ensure `addons/xedats/GLTF/` and `addons/xedats/GLTF/Profiles/` are present.
 2. Enable plugin: `res://addons/xedats_gltf/plugin.cfg` in **Project Settings → Plugins**.
-3. See **[GLTF_Docs/Setup_GLTF_Audio_Surfaces.md](packages/Xedats/GLTF_Docs/Setup_GLTF_Audio_Surfaces.md)** for full authoring guidance.
+3. See **[GLTF_Docs/Setup_GLTF_Audio_Surfaces.md](addons/xedats/GLTF_Docs/Setup_GLTF_Audio_Surfaces.md)** for full authoring guidance.
 4. The `Tests_GLTF/` folder contains fixture-based import validation tests — safe to omit in shipped builds.
 
 ---
@@ -111,17 +111,19 @@ Xebug companion modules (pool monitor, bus inspector, event monitor, runtime val
 
 ```
 Xedats-Standalone/
+├── addons/
+│   └── xedats/                  ← standalone runtime plugin
+│       ├── Core/                ← audio subsystems (crossfade, events, state, containers)
+│       ├── Nodes/               ← runtime nodes (singleton, players, listeners)
+│       ├── MIDI/                ← MIDI parser, sequencer, effects (optional)
+│       ├── GLTF/                ← glTF import bridge + profiles (optional)
+│       ├── editor/              ← inspector plugins (optional)
+│       ├── Xedats.md            ← comprehensive API reference
+│       └── Getting_Started.md   ← practical usage guide
 ├── packages/
-│   ├── Xedats/                  ← standalone runtime package
-│   │   ├── Core/                ← audio subsystems (crossfade, events, state, containers)
-│   │   ├── Nodes/               ← runtime nodes (singleton, players, listeners)
-│   │   ├── MIDI/                ← MIDI parser, sequencer, effects (optional)
-│   │   ├── GLTF/                ← glTF import bridge + profiles (optional)
-│   │   ├── addons/xedats/       ← editor plugin (optional)
-│   │   ├── Xedats.md            ← comprehensive API reference
-│   │   └── Getting_Started.md   ← practical usage guide
 │   └── XedatsConsoleModule/     ← optional console command bridge
-├── test-environment/            ← headless compile-check project
+├── .gitattributes
+├── .gitignore
 ├── LICENSE
 └── README.md
 ```
@@ -132,10 +134,9 @@ Xedats-Standalone/
 
 | Document | Contents |
 |----------|----------|
-| **[Xedats.md](packages/Xedats/Xedats.md)** | Full API reference: buses, events, crossfading, MIDI, glTF, best practices |
-| **[Getting_Started.md](packages/Xedats/Getting_Started.md)** | Practical setup guide with common object/interaction audio patterns |
-| **[GLTF_Docs/](packages/Xedats/GLTF_Docs/)** | glTF audio authoring, spatial audio research, implementation plan |
-| **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** | System design and subsystem boundaries |
+| **[Xedats.md](addons/xedats/Xedats.md)** | Full API reference: buses, events, crossfading, MIDI, glTF, best practices |
+| **[Getting_Started.md](addons/xedats/Getting_Started.md)** | Practical setup guide with common object/interaction audio patterns |
+| **[GLTF_Docs/](addons/xedats/GLTF_Docs/)** | glTF audio authoring, spatial audio research, implementation plan |
 | **[THIRDPARTY_NOTICES.md](THIRDPARTY_NOTICES.md)** | Third-party dependency declarations |
 
 ---
