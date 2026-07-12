@@ -1,0 +1,12 @@
+# Normalize line endings for all text files
+* text=auto eol=lf
+
+# Asset Store: only include the addons folder when downloading from the Asset Store
+/**        export-ignore
+/addons    !export-ignore
+/addons/** !export-ignore
+
+# Internal dev files — never in the ZIP
+/packages/  export-ignore
+/test-environment/  export-ignore
+/docs/  export-ignore
