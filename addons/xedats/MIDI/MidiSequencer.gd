@@ -46,6 +46,12 @@ extends Node
 ## Audio category for dispatched events.
 @export var audio_category: String = "Music"
 
+## Per-channel instrument resource overrides.
+## Key = MIDI channel (int 0-15), Value = [MidiInstrumentResource].
+## When set, notes on that channel resolve through the instrument resource
+## instead of the flat [member note_map].
+@export var channel_instruments: Dictionary = {}
+
 ## Whether the sequencer is currently playing.
 var is_playing: bool = false
 
@@ -64,8 +70,17 @@ var _track_event_indices: Dictionary = {}
 ## Per-channel current program number.
 var _channel_programs: Dictionary = {}
 
-## Active note players tracked for potential early-release. Key = (channel << 8 | note), Value = player node.
+## Active note players and timing info.
+## Key = (channel << 8 | note), Value = { player, start_tick, velocity, channel }.
 var _active_notes: Dictionary = {}
+
+## Tracks whether the sustain pedal (CC 64) is currently held.
+var _sustain_active: bool = false
+
+## Notes whose NOTE_OFF arrived while sustain was active.
+## Key = (channel << 8 | note), Value = { off_tick, off_velocity, channel }.
+## Processed when sustain pedal returns to 0.
+var _sustained_notes: Dictionary = {}
 
 ## Signal emitted on each beat boundary.
 signal beat(beat_number: int)
@@ -78,6 +93,10 @@ signal playback_finished()
 
 ## Signal emitted when a note event is dispatched.
 signal note_dispatched(note: int, velocity: int, channel: int)
+
+## Signal emitted when a held note is released (NOTE_OFF or sustain release).
+## Provides note, key-off velocity, channel, duration in ticks, and duration in seconds.
+signal note_released(note: int, velocity: int, channel: int, duration_ticks: int, duration_seconds: float)
 
 
 func _ready() -> void:
@@ -124,6 +143,8 @@ func play() -> void:
 	_track_event_indices.clear()
 	_channel_programs.clear()
 	_active_notes.clear()
+	_sustain_active = false
+	_sustained_notes.clear()
 
 	for i: int in range(sequence.tracks.size()):
 		_track_ticks[i] = 0
@@ -154,8 +175,11 @@ func resume() -> void:
 
 
 func seek_to_tick(tick: int) -> void:
+	_release_active_notes()
 	current_tick = clampi(tick, 0, sequence.duration_ticks)
 	_reset_track_positions()
+	_sustain_active = false
+	_sustained_notes.clear()
 	_process_events_up_to(current_tick)
 
 
@@ -205,22 +229,44 @@ func _dispatch_event(event: MidiSequence.MidiEvent, _track_idx: int) -> void:
 			_dispatch_note(event, false)
 		MidiSequence.MidiEventType.PROGRAM_CHANGE:
 			_channel_programs[event.channel] = event.program
+		MidiSequence.MidiEventType.CONTROL_CHANGE:
+			_handle_control_change(event)
 
 
 func _dispatch_note(event: MidiSequence.MidiEvent, is_on: bool) -> void:
-	if not is_on:
-		return  # Note-off: players auto-release on finished
+	var note_key: int = (event.channel << 8) | event.note
 
-	var program: int = _channel_programs.get(event.channel, 0)
-	var resolved: Dictionary = note_map.resolve(event.note, event.channel, program)
+	if is_on:
+		_dispatch_note_on(event, note_key)
+	else:
+		_dispatch_note_off(event, note_key)
 
-	var event_name: String = String(resolved.get("event", ""))
-	var container: AudioArrayContainer = resolved.get("container") as AudioArrayContainer
-	var pitch_offset: float = float(resolved.get("pitch_offset", 0.0))
-	var note_volume_scale: float = float(resolved.get("volume_scale", 1.0))
 
-	if event_name.is_empty() and container == null:
-		return
+func _dispatch_note_on(event: MidiSequence.MidiEvent, note_key: int) -> void:
+	var instrument: MidiInstrumentResource = channel_instruments.get(event.channel) as MidiInstrumentResource
+	var event_name: String = ""
+	var container: AudioArrayContainer = null
+	var pitch_offset: float = 0.0
+	var note_volume_scale: float = 1.0
+
+	if instrument != null:
+		var resolved: Dictionary = instrument.resolve(event.note, event.velocity)
+		container = resolved.get("container") as AudioArrayContainer
+		pitch_offset = float(resolved.get("pitch_offset", 0.0))
+		note_volume_scale = float(resolved.get("volume_scale", 1.0))
+
+		if container == null:
+			return
+	else:
+		var program: int = _channel_programs.get(event.channel, 0)
+		var resolved: Dictionary = note_map.resolve(event.note, event.channel, program)
+		event_name = String(resolved.get("event", ""))
+		container = resolved.get("container") as AudioArrayContainer
+		pitch_offset = float(resolved.get("pitch_offset", 0.0))
+		note_volume_scale = float(resolved.get("volume_scale", 1.0))
+
+		if event_name.is_empty() and container == null:
+			return
 
 	var xedats: XedatsSingleton = XedatsSingleton.instance()
 	if xedats == null:
@@ -252,8 +298,70 @@ func _dispatch_note(event: MidiSequence.MidiEvent, is_on: bool) -> void:
 		if not audio_category.is_empty():
 			player.route_to_audio_category(audio_category)
 
-		_active_notes[(event.channel << 8) | event.note] = player
+		var note_info: Dictionary = {
+			"player": player,
+			"start_tick": current_tick,
+			"velocity": event.velocity,
+			"channel": event.channel,
+		}
+		_active_notes[note_key] = note_info
 		note_dispatched.emit(event.note, event.velocity, event.channel)
+
+
+func _dispatch_note_off(event: MidiSequence.MidiEvent, note_key: int) -> void:
+	if _sustain_active:
+		_sustained_notes[note_key] = {
+			"off_tick": current_tick,
+			"off_velocity": event.velocity,
+			"channel": event.channel,
+		}
+		return
+
+	_release_note(note_key, event.velocity, current_tick)
+
+
+func _release_note(note_key: int, off_velocity: int, off_tick: int) -> void:
+	if not _active_notes.has(note_key):
+		return
+
+	var note_info: Dictionary = _active_notes[note_key] as Dictionary
+	var start_tick: int = int(note_info.get("start_tick", 0))
+	var duration_ticks: int = maxi(0, off_tick - start_tick)
+	var duration_seconds: float = sequence.ticks_to_seconds(duration_ticks, tempo_override)
+
+	var note_val: int = note_key & 0xFF
+	var chan: int = int(note_info.get("channel", 0))
+
+	note_released.emit(note_val, off_velocity, chan, duration_ticks, duration_seconds)
+	_active_notes.erase(note_key)
+
+
+func _handle_control_change(event: MidiSequence.MidiEvent) -> void:
+	if event.controller == 64:
+		var was_active: bool = _sustain_active
+		_sustain_active = event.value >= 64
+
+		if was_active and not _sustain_active:
+			_release_sustained_notes()
+
+
+func _release_sustained_notes() -> void:
+	for note_key_variant: Variant in _sustained_notes.keys():
+		var sustain_info: Dictionary = _sustained_notes[note_key_variant] as Dictionary
+		var off_tick: int = int(sustain_info.get("off_tick", current_tick))
+		var off_velocity: int = int(sustain_info.get("off_velocity", 0))
+		_release_note(int(note_key_variant), off_velocity, off_tick)
+	_sustained_notes.clear()
+
+
+func get_note_duration(note: int, channel: int) -> float:
+	var note_key: int = (channel << 8) | note
+	if _active_notes.has(note_key):
+		var note_info: Dictionary = _active_notes[note_key] as Dictionary
+		var start_tick: int = int(note_info.get("start_tick", current_tick))
+		var duration_ticks: int = maxi(0, current_tick - start_tick)
+		return sequence.ticks_to_seconds(duration_ticks, tempo_override)
+	return 0.0
 
 
 func _note_to_frequency(note: int) -> float:
@@ -268,7 +376,10 @@ func _reset_track_positions() -> void:
 
 func _release_active_notes() -> void:
 	for key_variant: Variant in _active_notes.keys():
-		var player: Node = _active_notes[key_variant] as Node
+		var note_info: Dictionary = _active_notes[key_variant] as Dictionary
+		var player: Node = note_info.get("player") as Node
 		if player != null and is_instance_valid(player):
 			player.stop()
 	_active_notes.clear()
+	_sustained_notes.clear()
+	_sustain_active = false

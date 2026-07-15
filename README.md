@@ -77,7 +77,7 @@ Xedats ships as a single package, but several components are optional and can be
 ### Enabling the Editor Plugin
 
 1. Ensure `addons/xedats/plugin.cfg` exists in your project.
-2. Go to **Project Settings → Plugins** and enable **Xedats Distance Band Editor**.
+2. Go to **Project Settings → Plugins** and enable **Xedats — Dynamic Audio Tool System**.
 3. The Propagation Baker dock appears in the right panel (drag to reposition).
 
 ### Enabling the Console Module
