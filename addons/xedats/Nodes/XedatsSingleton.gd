@@ -296,6 +296,7 @@ func _ready() -> void:
 	if ClassDB.class_exists(&"XedatsPlayer2D"):
 		_initialize_audio_system_2d()
 	_ensure_builtin_effect_buses()
+	_ensure_builtin_base_buses()
 	
 	# Create subsystems (these might call XedatsSingleton.instance())
 	_audio_event_system = AudioEventSystem.new()
@@ -1057,6 +1058,12 @@ func _ensure_builtin_effect_buses() -> void:
 	for effect_bus_name_variant: Variant in BUILTIN_EFFECT_BUS_SENDS.keys():
 		var effect_bus_name: String = String(effect_bus_name_variant)
 		create_audio_bus(effect_bus_name, String(BUILTIN_EFFECT_BUS_SENDS[effect_bus_name]))
+
+
+func _ensure_builtin_base_buses() -> void:
+	for base_bus_name: String in BUILTIN_BASE_BUSES:
+		if base_bus_name != "Master":
+			create_audio_bus(base_bus_name, "Master")
 
 # ============ PERFORMANCE MONITORING ============
 
